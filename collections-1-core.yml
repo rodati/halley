@@ -1,0 +1,278 @@
+cosmo-production:
+
+  prospects_actions:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - account: TEXT
+    - group: TEXT
+    - prospect: TEXT
+    - user: TEXT
+    - type: TEXT
+    - created_at:
+      :source: createdAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - updated_at:
+      :source: updatedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    :meta:
+      :table: p00_prospects_actions
+      :extra_props: JSONB
+      :composite_key:
+      - id
+      - account
+      :incremental_replication_key: updated_at
+      :table_init: |
+        create index prospect_on_prospects_actions_idx on p00_prospects_actions (prospect);
+        create index user_on_prospects_actions_idx on p00_prospects_actions ("user");
+        create index group_on_prospects_actions_idx on p00_prospects_actions ("group");
+
+  prospects:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - account: TEXT
+    - group: TEXT
+    - user: TEXT
+    - user_group:
+      :source: userGroup
+      :type: TEXT
+    - first_name:
+      :source: firstName
+      :type: TEXT
+    - last_name:
+      :source: lastName
+      :type: TEXT
+    - emails: TEXT
+    - phones: TEXT
+    - status: TEXT
+    - last_action_at:
+      :source: lastActionAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - created_at:
+      :source: createdAt
+      :type:  TIMESTAMP WITH TIME ZONE
+    - updated_at:
+      :source: updatedAt
+      :type:  TIMESTAMP WITH TIME ZONE
+    - enabled: BOOLEAN
+    - first_contacted_at:
+      :source: firstContactedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    :meta:
+      :table: p00_prospects
+      :extra_props: JSONB
+      :composite_key:
+      - id
+      - account
+      :incremental_replication_key: updated_at
+      :table_init: |
+        create index user_on_prospects_idx on p00_prospects ("user");
+        create index group_on_prospects_idx on p00_prospects ("group");
+
+  prospects_proposals:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - account: TEXT
+    - prospect:
+      :source: prospect
+      :type: TEXT
+    - type: TEXT
+    - publish_text:
+      :source: publishText
+      :type:  TEXT
+    - publish_link:
+      :source: publishLink
+      :type:  TEXT
+    - created_at:
+      :source: createdAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - updated_at:
+      :source: updatedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    :meta:
+      :table: p00_prospects_proposals
+      :extra_props: JSONB
+      :composite_key:
+      - id
+      - account
+      :incremental_replication_key: updated_at
+      :table_init: |
+        create index p00_prospects_proposals_idx on p00_prospects_proposals ("prospect");
+
+  prospects_quotes:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - account: TEXT
+    - group: TEXT
+    - prospect: TEXT
+    - status: TEXT
+    - created_at:
+      :source: createdAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - updated_at:
+      :source: updatedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    :meta:
+      :table: p00_prospects_quotes
+      :extra_props: JSONB
+      :composite_key:
+      - id
+      - account
+      :incremental_replication_key: updated_at
+      :table_init: |
+        create index prospect_on_prospects_quotes_idx on p00_prospects_quotes ("prospect");
+        create index group_on_prospects_quotes_idx on p00_prospects_quotes ("group");
+
+  accounts:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - name: TEXT
+    - enabled: BOOLEAN
+    - created_at:
+      :source: createdAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - updated_at:
+      :source: updatedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - demo: BOOLEAN
+    - plan: TEXT
+    - free_users:
+      :source: freeUsers
+      :type: INTEGER
+    :meta:
+      :table: p00_accounts
+      :extra_props: JSONB
+      :incremental_replication_key: updated_at
+
+  groups:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - account: TEXT
+    - parent_group:
+      :source: parent
+      :type: TEXT
+    - name: TEXT
+    - address: TEXT
+    - country_code: TEXT
+      :source: countryCode
+      :type: TEXT
+    - tax_identification_type: TEXT
+      :source: taxIdentificationType
+      :type: TEXT
+    - tax_identification:
+      :source: taxIdentification
+      :type: TEXT
+    - enabled: BOOLEAN
+    - created_at:
+      :source: createdAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - phones: TEXT
+    - emails: TEXT
+    - language: TEXT
+    - updated_at:
+      :source: updatedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    :meta:
+      :table: p00_groups
+      :extra_props: JSONB
+      :composite_key:
+      - id
+      - account
+      :incremental_replication_key: updated_at
+  
+  prospects_interactions:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - account: TEXT
+    - prospect: TEXT
+    - prospect_category:
+      :source: prospectCategory
+      :type: TEXT
+    - group: TEXT
+    - user: TEXT
+    - type: TEXT
+    - created_at:
+      :source: createdAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - status: TEXT
+    - started_at:
+      :source: startedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - canceled_at:
+      :source: canceledAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - successful: BOOLEAN
+    - finished_at:
+      :source: finishedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - due_at:
+      :source: dueAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - updated_at:
+      :source: updatedAt
+      :type: TIMESTAMP WITH TIME ZONE
+      :retain_extra_prop: true  # TODO: buscar si en algún lugar seguimos usando _extra_props->>'updatedAt' y reeplazarlo por updated_at
+    :meta:
+      :table: p00_prospects_interactions
+      :extra_props: JSONB
+      :composite_key:
+      - id
+      - account
+      :incremental_replication_key: updated_at
+      :table_init: |
+        create index prospect_on_prospects_interactions_idx on p00_prospects_interactions (prospect);
+        create index user_on_prospects_interactions_idx on p00_prospects_interactions ("user");
+        create index group_on_prospects_interactions_idx on p00_prospects_interactions ("group");
+
+  groups_rbac_users:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - account: TEXT
+    - user_name:
+      :source: userName
+      :type: TEXT
+    - password: TEXT
+    - first_name:
+      :source: firstName
+      :type: TEXT
+    - last_name:
+      :source: lastName
+      :type: TEXT
+    - gender: TEXT
+    - phone: TEXT
+    - cell_phone:
+      :source: cellPhone
+      :type: TEXT
+    - email: TEXT
+    - roles: TEXT
+    - active: BOOLEAN
+    - category: TEXT
+    - group: TEXT
+    - updated_at:
+      :source: updatedAt
+      :type: TIMESTAMP WITH TIME ZONE
+      :retain_extra_prop: true  # TODO: buscar si en algún lugar seguimos usando _extra_props->>'updatedAt' y reeplazarlo por updated_at
+    :meta:
+      :table: p00_groups_rbac_users
+      :extra_props: JSONB
+      :composite_key:
+      - id
+      - account
+      :incremental_replication_key: updated_at
+      :table_init: |
+        create index user_on_p00_groups_rbac_users_idx on p00_groups_rbac_users ("group");

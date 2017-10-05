@@ -1,0 +1,99 @@
+cosmo-production:
+
+  jupiter_incoming_emails:
+    :columns:
+      - id:
+        :source: _id
+        :type: TEXT
+      - created_at:
+        :source: createdAt
+        :type: TIMESTAMP WITH TIME ZONE
+      - updated_at:
+        :source: updatedAt
+        :type: TIMESTAMP WITH TIME ZONE
+      - sender: TEXT
+      - recipient: TEXT
+      - status: TEXT
+      - integration: TEXT
+      - prospect: TEXT
+      - merged: BOOLEAN
+    :meta:
+      :table: p00_jupiter_incoming_emails
+
+  ganymede_activity_records:
+    :columns:
+      - id:
+        :source: _id
+        :type: TEXT
+      - integration_id:
+        :source: integrationId
+        :type: TEXT
+      - created_at:
+        :source: createdAt
+        :type: TIMESTAMP WITH TIME ZONE
+      - updated_at:
+        :source: updatedAt
+        :type: TIMESTAMP WITH TIME ZONE
+      - started_at:
+        :source: startedAt
+        :type: TIMESTAMP WITH TIME ZONE
+      - resolved_at:
+        :source: resolvedAt
+        :type: TIMESTAMP WITH TIME ZONE
+      - failed_at:
+        :source: failedAt
+        :type: TIMESTAMP WITH TIME ZONE
+      - type: TEXT
+      - status: TEXT
+    :meta:
+      :table: p00_ganymede_activity_records
+
+  ganymede_entity_records:
+    :columns:
+      - id:
+        :source: _id
+        :type: TEXT
+      - integration_id:
+        :source: integrationId
+        :type: TEXT
+      - created_at:
+        :source: createdAt
+        :type: TIMESTAMP WITH TIME ZONE
+      - updated_at:
+        :source: updatedAt
+        :type: TIMESTAMP WITH TIME ZONE
+      - entity_type:
+        :source: entityType
+        :type: TEXT
+      - provider_entity_id:
+        :source: providerEntityId
+        :type: TEXT
+      - sirena_entity_id:
+        :source: sirenaEntityId
+        :type: TEXT
+      - status: TEXT
+    :meta:
+      :table: p00_ganymede_entity_records
+
+
+  callisto_lead:
+    :columns:
+      - id:
+        :source: _id
+        :type: TEXT
+      - prospect: TEXT
+      - integration_id:
+        :source: integrationId
+        :type: TEXT
+      - created_at:
+        :source: createdAt
+        :type: TIMESTAMP WITH TIME ZONE
+      - updated_at:
+        :source: updatedAt
+        :type: TIMESTAMP WITH TIME ZONE
+      - legacy_lead_id:
+        :source: legacyLeadId
+        :type: TEXT
+      - status: TEXT
+    :meta:
+      :table: p00_callisto_lead
