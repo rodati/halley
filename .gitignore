@@ -59,10 +59,3 @@ typings/
 
 # @std/esm cache
 .esm-cache
-
-# misc and config files
-index.js
-collections-1-core.yml
-collections-2-integrations.yml
-
-test_with_cosmo.sh
