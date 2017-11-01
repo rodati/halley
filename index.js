@@ -4,7 +4,7 @@ const argv = require('yargs')
   .option('collections', {
     describe: 'Collection map YAML file',
     nargs: 1,
-    default: 'collections.yml',
+    default: 'collections-1-core.yml',
     required: true,
     alias: 'c'
   })
@@ -12,7 +12,7 @@ const argv = require('yargs')
   .option('sql', {
     describe: 'SQL server to connect to',
     nargs: 1,
-    default: 'postgres:///',
+    default: 'postgres://postgres:postgres@localhost:5432/sirena-core-staging',
     required: true
   })
 
@@ -26,6 +26,7 @@ const argv = require('yargs')
   .option('incremental-import', {
     describe: 'Do an incremental import',
     boolean: true,
+    default: false,
     alias: 'i'
   })
 
