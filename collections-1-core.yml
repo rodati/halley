@@ -88,6 +88,12 @@ cosmo-production:
     - publish_link:
       :source: publishLink
       :type:  TEXT
+    - provider_account:
+      :source: providerAccount
+      :type: TEXT
+    - provider_group:
+      :source: providerGroup
+      :type: TEXT
     - created_at:
       :source: createdAt
       :type: TIMESTAMP WITH TIME ZONE
