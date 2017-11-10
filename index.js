@@ -19,7 +19,7 @@ const argv = require('yargs')
   .option('mongo', {
     describe: 'Mongo connection string',
     nargs: 1,
-    default: 'mongodb://halley-staging:tY9CUZivFVCGFDAb@staging-shard-00-00-0rmx7.mongodb.net:27017,staging-shard-00-01-0rmx7.mongodb.net:27017,staging-shard-00-02-0rmx7.mongodb.net:27017/local?ssl=true&replicaSet=Staging-shard-0&authSource=admin',
+    default: 'mongodb://localhost',
     required: true
   })
 
