@@ -249,6 +249,9 @@ cosmo-production:
     - account: TEXT
     - group: TEXT
     - prospect: TEXT
+    - interaction:
+      :type: TEXT
+      :retain_extra_prop: true   # TODO: once no one uses the extra prop, remove this
     - user: TEXT
     - type: TEXT
     - created_at:
