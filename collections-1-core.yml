@@ -1,4 +1,4 @@
-cosmo-production:
+core-production:
 
   accounts:
     :columns:
@@ -98,6 +98,9 @@ cosmo-production:
     - user_group:
       :source: userGroup
       :type: TEXT
+    - first_lead:
+      :source: firstLead
+      :type: TEXT
     - first_name:
       :source: firstName
       :type: TEXT
@@ -120,6 +123,19 @@ cosmo-production:
     - first_contacted_at:
       :source: firstContactedAt
       :type: TIMESTAMP WITH TIME ZONE
+    - next_interaction:
+      :source: nextInteraction
+      :type: TEXT
+    - next_interaction_due_at:
+      :source: nextInteractionDueAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - next_interaction_type:
+      :source: nextInteractionType
+      :type: TEXT
+    - label: TEXT
+    - archiving_reason:
+      :source: archivingReason
+      :type: TEXT
     :meta:
       :table: p00_prospects
       :extra_props: JSONB
@@ -139,6 +155,12 @@ cosmo-production:
     - account: TEXT
     - group: TEXT
     - prospect: TEXT
+    - oem_group:
+      :source: oemGroup
+      :type: TEXT
+    - oem_account: 
+      :source: oemAccount
+      :type: TEXT
     - created_at:
       :source: createdAt
       :type: TIMESTAMP WITH TIME ZONE
@@ -175,12 +197,9 @@ cosmo-production:
     - account: TEXT
     - prospect: TEXT
     - type: TEXT
-    - publish_text:
-      :source: publishText
+    - source:
       :type: TEXT
-    - publish_link:
-      :source: publishLink
-      :type: TEXT
+      :retain_extra_prop: true   # TODO: once no one uses the extra prop, remove this
     - provider_account:
       :source: providerAccount
       :type: TEXT
@@ -268,3 +287,17 @@ cosmo-production:
         create index prospect_on_prospects_actions_idx on p00_prospects_actions (prospect);
         create index user_on_prospects_actions_idx on p00_prospects_actions ("user");
         create index group_on_prospects_actions_idx on p00_prospects_actions ("group");
+
+  clients_configs:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - group: TEXT
+    - user: TEXT
+    - config: JSONB
+    :meta:
+      :table: p00_clients_configs
+      :table_init: |
+        create index user_on_clients_configs_idx on p00_clients_configs ("user");
+        create index group_on_clients_configs_idx on p00_clients_configs ("group");

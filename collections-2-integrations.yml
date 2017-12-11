@@ -1,4 +1,4 @@
-cosmo-production:
+core-production:
 
   jupiter_incoming_emails:
     :columns:
