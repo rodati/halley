@@ -197,7 +197,16 @@ core-production:
     - account: TEXT
     - prospect: TEXT
     - type: TEXT
+    - medium:
+      :type: TEXT
+      :retain_extra_prop: true   # TODO: once no one uses the extra prop, remove this
     - source:
+      :type: TEXT
+      :retain_extra_prop: true   # TODO: once no one uses the extra prop, remove this
+    - campaign:
+      :type: TEXT
+      :retain_extra_prop: true   # TODO: once no one uses the extra prop, remove this
+    - provider:
       :type: TEXT
       :retain_extra_prop: true   # TODO: once no one uses the extra prop, remove this
     - provider_account:
