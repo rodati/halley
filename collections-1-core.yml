@@ -93,6 +93,9 @@ core-production:
       :source: _id
       :type: TEXT
     - account: TEXT
+    - initial_group:
+      :source: initialGroup
+      :type: TEXT
     - group: TEXT
     - user: TEXT
     - user_group:
