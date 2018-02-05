@@ -139,6 +139,10 @@ core-production:
     - archiving_reason:
       :source: archivingReason
       :type: TEXT
+    - category:
+      :source: category
+      :type: TEXT
+      :retain_extra_prop: true
     :meta:
       :table: p00_prospects
       :extra_props: JSONB
