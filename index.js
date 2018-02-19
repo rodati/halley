@@ -19,7 +19,7 @@ const argv = require('yargs')
   .option('mongo', {
     describe: 'Mongo connection string',
     nargs: 1,
-    default: 'mongodb://localhost',
+    default: 'mongodb://localhost/local',
     required: true
   })
 
