@@ -22,6 +22,8 @@ core-production:
       :table: p00_accounts
       :extra_props: JSONB
       :incremental_replication_key: updated_at
+      :table_init: |
+        CLUSTER p00_accounts using p00_accounts_pkey;
 
   groups:
     :columns:
@@ -51,6 +53,9 @@ core-production:
       - id
       - account
       :incremental_replication_key: updated_at
+      :table_init: |
+        CREATE INDEX account_on_groups_idx ON p00_groups (account);
+        CLUSTER p00_groups using account_on_groups_idx;
 
   groups_rbac_users:
     :columns:
@@ -85,7 +90,9 @@ core-production:
       - id
       - account
       :table_init: |
-        create index user_on_p00_groups_rbac_users_idx on p00_groups_rbac_users ("group");
+        CREATE INDEX group_on_groups_rbac_users_idx ON p00_groups_rbac_users ("group");
+        CREATE INDEX account_on_groups_rbac_users_idx ON p00_groups_rbac_users (account);
+        CLUSTER p00_groups_rbac_users USING account_on_groups_rbac_users_idx;
 
   prospects:
     :columns:
@@ -151,8 +158,10 @@ core-production:
       - account
       :incremental_replication_key: updated_at
       :table_init: |
-        create index user_on_prospects_idx on p00_prospects ("user");
-        create index group_on_prospects_idx on p00_prospects ("group");
+        CREATE INDEX user_on_prospects_idx ON p00_prospects ("user");
+        CREATE INDEX group_on_prospects_idx ON p00_prospects ("group");
+        CREATE INDEX account_on_prospects_idx ON p00_prospects USING btree (account);
+        CLUSTER p00_prospects USING account_on_prospects_idx;
 
   prospects_quotes:
     :columns:
@@ -193,8 +202,10 @@ core-production:
       - account
       :incremental_replication_key: updated_at
       :table_init: |
-        create index prospect_on_prospects_quotes_idx on p00_prospects_quotes ("prospect");
-        create index group_on_prospects_quotes_idx on p00_prospects_quotes ("group");
+        CREATE INDEX prospect_on_prospects_quotes_idx ON p00_prospects_quotes ("prospect");
+        CREATE INDEX group_on_prospects_quotes_idx ON p00_prospects_quotes ("group");
+        CREATE INDEX account_on_prospects_quotes_idx ON p00_prospects_quotes USING btree (account);
+        CLUSTER p00_prospects_quotes USING account_on_prospects_quotes_idx;
 
   prospects_proposals:
     :columns:
@@ -227,7 +238,9 @@ core-production:
       - account
       :incremental_replication_key: updated_at
       :table_init: |
-        create index p00_prospects_proposals_idx on p00_prospects_proposals ("prospect");
+        CREATE INDEX prospect_on_prospects_proposals_idx ON p00_prospects_proposals ("prospect");
+        CREATE INDEX account_on_prospects_proposals_idx ON p00_prospects_proposals USING btree (account);
+        CLUSTER p00_prospects_proposals USING account_on_prospects_proposals_idx;
 
   prospects_interactions:
     :columns:
@@ -267,9 +280,11 @@ core-production:
       - account
       :incremental_replication_key: updated_at
       :table_init: |
-        create index prospect_on_prospects_interactions_idx on p00_prospects_interactions (prospect);
-        create index user_on_prospects_interactions_idx on p00_prospects_interactions ("user");
-        create index group_on_prospects_interactions_idx on p00_prospects_interactions ("group");
+        CREATE INDEX prospect_on_prospects_interactions_idx ON p00_prospects_interactions (prospect);
+        CREATE INDEX user_on_prospects_interactions_idx ON p00_prospects_interactions ("user");
+        CREATE INDEX group_on_prospects_interactions_idx ON p00_prospects_interactions ("group");
+        CREATE INDEX account_on_prospects_interactions_idx ON p00_prospects_interactions USING btree (account);
+        CLUSTER p00_prospects_interactions USING account_on_prospects_interactions_idx;
 
   prospects_actions:
     :columns:
@@ -295,9 +310,11 @@ core-production:
       - account
       :incremental_replication_key: created_at
       :table_init: |
-        create index prospect_on_prospects_actions_idx on p00_prospects_actions (prospect);
-        create index user_on_prospects_actions_idx on p00_prospects_actions ("user");
-        create index group_on_prospects_actions_idx on p00_prospects_actions ("group");
+        CREATE INDEX prospect_on_prospects_actions_idx ON p00_prospects_actions (prospect);
+        CREATE INDEX user_on_prospects_actions_idx ON p00_prospects_actions ("user");
+        CREATE INDEX group_on_prospects_actions_idx ON p00_prospects_actions ("group");
+        CREATE INDEX account_on_prospects_actions_idx ON p00_prospects_actions USING btree (account);
+        CLUSTER p00_prospects_actions USING account_on_prospects_actions_idx;
 
   clients_configs:
     :columns:
@@ -310,5 +327,5 @@ core-production:
     :meta:
       :table: p00_clients_configs
       :table_init: |
-        create index user_on_clients_configs_idx on p00_clients_configs ("user");
-        create index group_on_clients_configs_idx on p00_clients_configs ("group");
+        CREATE INDEX user_on_clients_configs_idx ON p00_clients_configs ("user");
+        CREATE INDEX group_on_clients_configs_idx ON p00_clients_configs ("group");
