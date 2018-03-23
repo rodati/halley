@@ -42,3 +42,24 @@ hydra-mvp:
       :extra_props: JSONB
       :table_init: |
         CREATE INDEX incoming_number_on_hydra_incoming_calls_idx ON p00_hydra_incoming_calls (incoming_number);
+
+  hydra_numbers:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - incoming_number:
+      :source: incomingNumber
+      :type: TEXT
+    - description: TEXT
+    - routing: JSONB
+    - frontdesk_number:
+      :source: frontDeskNumber
+      :type: TEXT
+    - timezone: TEXT
+    - schedule: JSONB
+    :meta:
+      :table: p00_hydra_numbers
+      :extra_props: JSONB
+      :table_init: |
+        CREATE INDEX incoming_number_on_hydra_numbers_idx ON p00_hydra_numbers (incoming_number);
