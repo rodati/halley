@@ -1,0 +1,44 @@
+hidra-mvp:
+  hydra_incoming_calls:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - calluuid: TEXT
+    - incoming_number:
+      :source: incomingNumber
+      :type: TEXT
+    - from: TEXT
+    - status: TEXT
+    - type: TEXT
+    - frontdesk_calluuid:
+      :source: frontDeskCalluuid
+      :type: TEXT
+    - left_voicemail:
+      :source: leftVoiceMail
+      :type: BOOLEAN
+    - voicemail_url:
+      :source: voiceMailUrl
+      :type: TEXT
+    - routing: JSONB
+    - started_at:
+      :source: startedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - answered_at:
+      :source: answeredAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - connected_at:
+      :source: connectedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - completed_at:
+      :source: completedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - record_url:
+      :source: recordUrl
+      :type: TEXT
+    - billing: JSONB
+    :meta:
+      :table: p00_hydra_incoming_calls
+      :extra_props: JSONB
+      :table_init: |
+        CREATE INDEX incoming_number_on_hydra_incoming_calls_idx ON p00_hydra_incoming_calls (incoming_number);
