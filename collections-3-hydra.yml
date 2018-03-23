@@ -1,4 +1,4 @@
-hidra-mvp:
+hydra-mvp:
   hydra_incoming_calls:
     :columns:
     - id:
