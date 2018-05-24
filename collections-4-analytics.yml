@@ -1,0 +1,88 @@
+core-production:
+
+  groups_analytics_events:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - created_at:
+      :source: createdAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - updated_at:
+      :source: updatedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - type: TEXT
+    - user: TEXT
+    - group: TEXT
+    :meta:
+      :table: p00_groups_analytics_events
+      :extra_props: true
+
+  ceres_views:
+    :columns:
+    - id: 
+      :source: _id
+      :type: TEXT
+    - date: TIMESTAMP WITH TIME ZONE
+    - message: TEXT
+    - ua: TEXT
+    :meta:
+      :table: p00_ceres_views
+      :extra_props: true
+
+  ceres_clicks:
+    :columns:
+    - id: 
+      :source: _id
+      :type: TEXT
+    - date: TIMESTAMP WITH TIME ZONE
+    - message: TEXT
+    - ua: TEXT
+    :meta:
+      :table: p00_ceres_clicks
+      :extra_props: true
+
+  ceres_messages:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - sent_at:
+      :source: sentAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - template: TEXT
+    - type: TEXT
+    - language: TEXT
+    - user: TEXT
+    - group: TEXT
+    - alert: TEXT
+    :meta:
+      :table: p00_ceres_messages
+      :extra_props: true
+
+  ceres_alerts:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - created_at:
+      :source: createdAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - incident: TEXT
+    - type: TEXT
+    :meta:
+      :table: p00_ceres_alerts
+      :extra_props: true
+
+  ceres_incidents:
+    :columns:
+    - id:
+      :source: _id
+      :type: TEXT
+    - created_at:
+      :source: createdAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - type: TEXT
+    :meta:
+      :table: p00_ceres_incidents
+      :extra_props: true
