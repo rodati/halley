@@ -26,6 +26,7 @@ hydra-production:
     - id:
       :source: _id
       :type: TEXT
+    - account: TEXT
     - number: TEXT
     - integration: TEXT
     - integration_enabled:
