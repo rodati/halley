@@ -1,65 +1,97 @@
-hydra-mvp:
-  hydra_incoming_calls:
+hydra-production:
+  integrations:
     :columns:
     - id:
       :source: _id
       :type: TEXT
-    - calluuid: TEXT
-    - incoming_number:
-      :source: incomingNumber
+    - account: TEXT
+    - group: TEXT
+    - api_key:
+      :source: apiKey
       :type: TEXT
-    - from: TEXT
-    - status: TEXT
-    - type: TEXT
-    - frontdesk_calluuid:
-      :source: frontDeskCalluuid
+    - line: TEXT
+    - enabled: BOOLEAN
+    - removed_at:
+      :source: removedAt
+      type: TIMESTAMP WITH TIME ZONE
+    :meta:
+      :table: p00_hydra_integrations
+      :extra_props: JSONB
+      :table_init: |
+        CREATE INDEX account_on_hydra_integrations_idx ON p00_hydra_integrations (account);
+        CREATE INDEX line_on_hydra_integrations_idx ON p00_hydra_integrations (line);
+
+  lines:
+    :columns:
+    - id:
+      :source: _id
       :type: TEXT
-    - left_voicemail:
-      :source: leftVoiceMail
+    - number: TEXT
+    - integration: TEXT
+    - integration_enabled:
+      :source: integrationEnabled
       :type: BOOLEAN
-    - voicemail_url:
-      :source: voiceMailUrl
+    - settings: JSONB
+    - released_at:
+      :source: releasedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    :meta:
+      :table: p00_hydra_lines
+      :extra_props: JSONB
+      :table_init: |
+        CREATE INDEX integration_on_hydra_lines_idx ON p00_hydra_lines (integration);
+
+  calls:
+    :columns:
+    - id:
+      :source: _id
       :type: TEXT
-    - routing: JSONB
+    - uuid: TEXT
+    - line: TEXT
+    - number: TEXT
+    - from: TEXT
     - started_at:
       :source: startedAt
-      :type: TIMESTAMP WITH TIME ZONE
-    - answered_at:
-      :source: answeredAt
       :type: TIMESTAMP WITH TIME ZONE
     - connected_at:
       :source: connectedAt
       :type: TIMESTAMP WITH TIME ZONE
-    - completed_at:
-      :source: completedAt
+    - finished_at:
+      :source: finishedAt
       :type: TIMESTAMP WITH TIME ZONE
-    - record_url:
-      :source: recordUrl
-      :type: TEXT
+    - context: JSONB
+    - routing: JSONB
     - billing: JSONB
     :meta:
-      :table: p00_hydra_incoming_calls
+      :table: p00_hydra_calls
       :extra_props: JSONB
       :table_init: |
-        CREATE INDEX incoming_number_on_hydra_incoming_calls_idx ON p00_hydra_incoming_calls (incoming_number);
+        CREATE INDEX line_on_hydra_calls_idx ON p00_hydra_calls (line);
 
-  hydra_numbers:
+  leads:
     :columns:
     - id:
       :source: _id
       :type: TEXT
-    - incoming_number:
-      :source: incomingNumber
+    - call: TEXT
+    - status: TEXT
+    - created_at:
+      :source: createdAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - delivered_at:
+      :source: deliveredAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - delivered_id:
+      :source: deliveredId
       :type: TEXT
-    - description: TEXT
-    - routing: JSONB
-    - frontdesk_number:
-      :source: frontDeskNumber
+    - last_failed_at:
+      :source: lastFailedAt
+      :type: TIMESTAMP WITH TIME ZONE
+    - last_fail_message:
+      :source: lastFailMessage
       :type: TEXT
-    - timezone: TEXT
-    - schedule: JSONB
     :meta:
-      :table: p00_hydra_numbers
+      :table: p00_hydra_leads
       :extra_props: JSONB
       :table_init: |
-        CREATE INDEX incoming_number_on_hydra_numbers_idx ON p00_hydra_numbers (incoming_number);
+        CREATE INDEX call_on_hydra_leads_idx ON p00_hydra_leads (call);
