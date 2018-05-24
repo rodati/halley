@@ -13,7 +13,7 @@ hydra-production:
     - enabled: BOOLEAN
     - removed_at:
       :source: removedAt
-      type: TIMESTAMP WITH TIME ZONE
+      :type: TIMESTAMP WITH TIME ZONE
     :meta:
       :table: p00_hydra_integrations
       :extra_props: JSONB
