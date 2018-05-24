@@ -161,6 +161,7 @@ core-production:
         CREATE INDEX user_on_prospects_idx ON p00_prospects ("user");
         CREATE INDEX group_on_prospects_idx ON p00_prospects ("group");
         CREATE INDEX account_on_prospects_idx ON p00_prospects USING btree (account);
+        CREATE INDEX first_lead_on_prospects_idx ON p00_prospects USING btree (first_lead);
         CLUSTER p00_prospects USING account_on_prospects_idx;
 
   prospects_quotes:
@@ -240,6 +241,8 @@ core-production:
       :table_init: |
         CREATE INDEX prospect_on_prospects_proposals_idx ON p00_prospects_proposals ("prospect");
         CREATE INDEX account_on_prospects_proposals_idx ON p00_prospects_proposals USING btree (account);
+        CREATE INDEX provider_account_on_prospects_proposals_idx ON p00_prospects_proposals USING btree (provider_account);
+        CREATE INDEX provider_group_on_prospects_proposals_idx ON p00_prospects_proposals USING btree (provider_group);
         CLUSTER p00_prospects_proposals USING account_on_prospects_proposals_idx;
 
   prospects_interactions:
