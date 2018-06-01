@@ -28,6 +28,9 @@ hydra-production:
       :type: TEXT
     - account: TEXT
     - number: TEXT
+    - formatted_number:
+      :source: formattedNumber
+      :type: TEXT
     - integration: TEXT
     - integration_enabled:
       :source: integrationEnabled
