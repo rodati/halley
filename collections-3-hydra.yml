@@ -52,7 +52,6 @@ hydra-production:
       :type: TEXT
     - uuid: TEXT
     - line: TEXT
-    - number: TEXT
     - from: TEXT
     - started_at:
       :source: startedAt
