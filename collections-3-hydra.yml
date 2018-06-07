@@ -27,6 +27,9 @@ hydra-production:
       :source: _id
       :type: TEXT
     - account: TEXT
+    - created_at:
+      :source: createdAt
+      :type: TIMESTAMP WITH TIME ZONE
     - number: TEXT
     - formatted_number:
       :source: formattedNumber
