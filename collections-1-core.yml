@@ -150,6 +150,9 @@ core-production:
       :source: category
       :type: TEXT
       :retain_extra_prop: true
+    - search_text_query:
+      :source: searchTextQuery
+      :type: TEXT
     :meta:
       :table: p00_prospects
       :extra_props: JSONB
