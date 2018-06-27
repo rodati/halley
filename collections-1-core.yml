@@ -308,13 +308,16 @@ core-production:
     - created_at:
       :source: createdAt
       :type: TIMESTAMP WITH TIME ZONE
+     - updated_at:
+      :source: updatedAt
+      :type: TIMESTAMP WITH TIME ZONE
     :meta:
       :table: p00_prospects_actions
       :extra_props: JSONB
       :composite_key:
       - id
       - account
-      :incremental_replication_key: created_at
+      :incremental_replication_key: updated_at
       :table_init: |
         CREATE INDEX prospect_on_prospects_actions_idx ON p00_prospects_actions (prospect);
         CREATE INDEX user_on_prospects_actions_idx ON p00_prospects_actions ("user");
