@@ -4,9 +4,12 @@ const pm2 = require('pm2')
 const Raven = require('raven')
 
 const RAVEN_DSN = process.env.RAVEN_DSN
+const RAVEN_ENV = process.env.RAVEN_ENV
 
 if (RAVEN_DSN) {
-  Raven.config(RAVEN_DSN).install()
+  Raven.config(RAVEN_DSN, {
+    environment: RAVEN_ENV || 'production'
+  }).install()
 
   /**
  * Pm2 events monitor
