@@ -178,7 +178,7 @@ core-production:
     - oem_group:
       :source: oemGroup
       :type: TEXT
-    - oem_account: 
+    - oem_account:
       :source: oemAccount
       :type: TEXT
     - created_at:
@@ -275,7 +275,7 @@ core-production:
     - due_at:
       :source: dueAt
       :type: TIMESTAMP WITH TIME ZONE
-    - updated_at: 
+    - updated_at:
       :source: updatedAt
       :type: TIMESTAMP WITH TIME ZONE
     :meta:
@@ -308,7 +308,7 @@ core-production:
     - created_at:
       :source: createdAt
       :type: TIMESTAMP WITH TIME ZONE
-     - updated_at:
+    - updated_at:
       :source: updatedAt
       :type: TIMESTAMP WITH TIME ZONE
     :meta:
