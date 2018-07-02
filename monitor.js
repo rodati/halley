@@ -17,6 +17,7 @@ if (RAVEN_DSN) {
   Raven.context(function () {
     pm2.launchBus(function (err, bus) {
       bus.on('process:exception', function (message) {
+        console.log(`New PM2 exception: ${message.data.message}`)
         Raven.captureMessage(message.data.message, {
           extra: message
         })
