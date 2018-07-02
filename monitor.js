@@ -22,7 +22,7 @@ if (RAVEN_DSN) {
       bus.on('process:event', (message) => {
         // Events: online / exit / stop
         console.log(
-          `New PM2 event: ${message.event}. Executed mannually: ${message.manually.toString()}`
+          `New PM2 event: ${message.event}. Executed manually: ${message.manually.toString()}`
         )
       })
 
