@@ -165,6 +165,7 @@ core-production:
         CREATE INDEX group_on_prospects_idx ON p00_prospects ("group");
         CREATE INDEX account_on_prospects_idx ON p00_prospects USING btree (account);
         CREATE INDEX first_lead_on_prospects_idx ON p00_prospects USING btree (first_lead);
+        CREATE INDEX created_at_on_prospects_idx ON p00_prospects (created_at);
         CLUSTER p00_prospects USING account_on_prospects_idx;
 
   prospects_quotes:
@@ -209,6 +210,8 @@ core-production:
         CREATE INDEX prospect_on_prospects_quotes_idx ON p00_prospects_quotes ("prospect");
         CREATE INDEX group_on_prospects_quotes_idx ON p00_prospects_quotes ("group");
         CREATE INDEX account_on_prospects_quotes_idx ON p00_prospects_quotes USING btree (account);
+        CREATE INDEX created_at_on_prospects_quotes_idx ON p00_prospects (created_at);
+        CREATE INDEX accepted_at_on_prospects_quotes_idx ON p00_prospects (accepted_at);
         CLUSTER p00_prospects_quotes USING account_on_prospects_quotes_idx;
 
   prospects_proposals:
@@ -222,6 +225,12 @@ core-production:
     - source:
       :type: TEXT
       :retain_extra_prop: true   # TODO: once no one uses the extra prop, remove this
+    - integration:
+      :source: integration._id
+      :type: TEXT
+    - integration_type:
+      :source: integration.providerKey
+      :type: TEXT
     - provider_account:
       :source: providerAccount
       :type: TEXT
@@ -246,6 +255,8 @@ core-production:
         CREATE INDEX account_on_prospects_proposals_idx ON p00_prospects_proposals USING btree (account);
         CREATE INDEX provider_account_on_prospects_proposals_idx ON p00_prospects_proposals USING btree (provider_account);
         CREATE INDEX provider_group_on_prospects_proposals_idx ON p00_prospects_proposals USING btree (provider_group);
+        CREATE INDEX integration_on_prospects_proposals_idx ON p00_prospects_proposals USING btree (integration);
+        CREATE INDEX created_at_on_prospects_proposals_idx ON p00_prospects_proposals USING btree (created_at);
         CLUSTER p00_prospects_proposals USING account_on_prospects_proposals_idx;
 
   prospects_interactions:
@@ -290,6 +301,7 @@ core-production:
         CREATE INDEX user_on_prospects_interactions_idx ON p00_prospects_interactions ("user");
         CREATE INDEX group_on_prospects_interactions_idx ON p00_prospects_interactions ("group");
         CREATE INDEX account_on_prospects_interactions_idx ON p00_prospects_interactions USING btree (account);
+        CREATE INDEX created_at_on_prospects_interactions_idx ON p00_prospects_interactions USING btree (created_at);
         CLUSTER p00_prospects_interactions USING account_on_prospects_interactions_idx;
 
   prospects_actions:
@@ -323,6 +335,7 @@ core-production:
         CREATE INDEX user_on_prospects_actions_idx ON p00_prospects_actions ("user");
         CREATE INDEX group_on_prospects_actions_idx ON p00_prospects_actions ("group");
         CREATE INDEX account_on_prospects_actions_idx ON p00_prospects_actions USING btree (account);
+        CREATE INDEX created_at_on_prospects_actions_idx ON p00_prospects_actions USING btree (created_at);
         CLUSTER p00_prospects_actions USING account_on_prospects_actions_idx;
 
   clients_configs:
@@ -330,11 +343,13 @@ core-production:
     - id:
       :source: _id
       :type: TEXT
+    - account: TEXT
     - group: TEXT
     - user: TEXT
     - config: JSONB
     :meta:
       :table: p00_clients_configs
       :table_init: |
+        CREATE INDEX account_on_clients_configs_idx ON p00_clients_configs ("account");
         CREATE INDEX user_on_clients_configs_idx ON p00_clients_configs ("user");
         CREATE INDEX group_on_clients_configs_idx ON p00_clients_configs ("group");
