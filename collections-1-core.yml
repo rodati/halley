@@ -120,6 +120,9 @@ core-production:
     - emails: JSONB
     - phones: JSONB
     - status: TEXT
+    - last_action:
+      :source: lastAction
+      :type: TEXT
     - last_action_at:
       :source: lastActionAt
       :type: TIMESTAMP WITH TIME ZONE
@@ -228,9 +231,11 @@ core-production:
     - integration:
       :source: integration._id
       :type: TEXT
+      :retain_extra_prop: true   # TODO: once no one uses the extra prop, remove this
     - integration_type:
       :source: integration.providerKey
       :type: TEXT
+      :retain_extra_prop: true   # TODO: once no one uses the extra prop, remove this
     - provider_account:
       :source: providerAccount
       :type: TEXT
