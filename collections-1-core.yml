@@ -320,9 +320,6 @@ core-production:
     - account: TEXT
     - group: TEXT
     - prospect: TEXT
-    - enabled:
-      :type: BOOLEAN
-      :retain_extra_prop: true # TODO: once no one uses the extra prop, remove this
     - interaction:
       :type: TEXT
       :retain_extra_prop: true   # TODO: once no one uses the extra prop, remove this
