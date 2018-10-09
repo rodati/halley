@@ -213,8 +213,8 @@ core-production:
         CREATE INDEX prospect_on_prospects_quotes_idx ON p00_prospects_quotes ("prospect");
         CREATE INDEX group_on_prospects_quotes_idx ON p00_prospects_quotes ("group");
         CREATE INDEX account_on_prospects_quotes_idx ON p00_prospects_quotes USING btree (account);
-        CREATE INDEX created_at_on_prospects_quotes_idx ON p00_prospects (created_at);
-        CREATE INDEX accepted_at_on_prospects_quotes_idx ON p00_prospects (accepted_at);
+        CREATE INDEX created_at_on_prospects_quotes_idx ON p00_prospects_quotes (created_at);
+        CREATE INDEX accepted_at_on_prospects_quotes_idx ON p00_prospects_quotes (accepted_at);
         CLUSTER p00_prospects_quotes USING account_on_prospects_quotes_idx;
 
   prospects_proposals:
