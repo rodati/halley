@@ -17,25 +17,25 @@
   },
   "homepage": "https://github.com/rodati/halley#readme",
   "dependencies": {
-    "bluebird": "^3.5.0",
-    "js-yaml": "^3.9.1",
+    "bluebird": "^3.5.3",
+    "js-yaml": "^3.12.0",
     "lock": "^1.1.0",
     "lodash": "^4.17.11",
-    "mongodb": "^2.2.31",
+    "mongodb": "^3.1.10",
     "pg": "^7.2.0",
     "pg-copy-streams": "^1.2.0",
     "pm2": "^2.10.4",
-    "raven": "^2.4.0",
+    "raven": "^2.6.4",
     "rxjs": "^5.4.3",
     "winston": "^2.3.1",
     "yargs": "^8.0.2"
   },
   "devDependencies": {
-    "eslint": "^4.5.0",
-    "eslint-config-standard": "^10.2.1",
-    "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-node": "^5.1.1",
-    "eslint-plugin-promise": "^3.5.0",
-    "eslint-plugin-standard": "^3.0.1"
+    "eslint": "^5.10.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^8.0.0",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0"
   }
 }
