@@ -25,9 +25,15 @@
     "editor.insertSpaces": true,
     "standard.enable": false,
     "cSpell.words": [
-        "Postgre",
-        "Postgres",
         "bigint",
-        "smallint"
+        "lockify",
+        "oplog",
+        "postgre",
+        "postgres",
+        "promisified",
+        "promisify",
+        "replicable",
+        "smallint",
+        "upsert"
     ]
 }

@@ -24,7 +24,7 @@ const argv = require('yargs')
   })
 
   .option('incremental-import', {
-    describe: 'Do an incremental import',
+    describe: 'Do an incremental import (experimental)',
     boolean: true,
     default: false,
     alias: 'i'
@@ -39,15 +39,19 @@ const argv = require('yargs')
 
   .option('delete-mode', {
     describe: 'How to handle deletes',
-    choices: ['ignore', 'citus-multi-shard', 'normal'],
+    choices: ['ignore', 'normal'],
     default: 'normal'
   })
 
-  .option('log', {
-    describe: 'Set the log level',
-    choices: ['error', 'warn', 'info', 'verbose', 'debug', 'silly'],
-    default: 'info',
-    alias: 'l'
+  .option('db-mode', {
+    describe: 'Listen to changes in a single or multiple databases',
+    choices: [ 'multi', 'single' ],
+    default: 'multi'
+  })
+
+  .option('db-name', {
+    describe: 'Database name. Use with db-mode single. If not set, it defaults to the database specified in the Mongo connection string.',
+    string: true
   })
 
   .help('h')
