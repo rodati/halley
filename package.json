@@ -1,6 +1,6 @@
 {
   "name": "halley",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "MongoDB to PostgreSQL streaming replication",
   "main": "index.js",
   "bin": "./index.js",
