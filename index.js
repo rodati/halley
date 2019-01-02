@@ -3,6 +3,7 @@
 
 const argv = require('yargs')
   .env('HALLEY')
+
   .option('collections', {
     describe: 'Collection map YAML file',
     nargs: 1,
