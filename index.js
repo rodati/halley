@@ -58,4 +58,4 @@ const argv = require('yargs')
 
   .argv
 
-require('./lib/main')(argv)
+require('./src/main')(argv)

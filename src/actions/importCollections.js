@@ -8,14 +8,14 @@ const sql = require('../interfaces/sql')
 const { upsert } = require('./upsertSingle')
 const copyBatch = require('./copyBatch')
 
-module.exports = async function importCollections (mongoClient, pgPool, specs, isIncremental) {
+module.exports = async function importCollections (mongoClient, pgPool, specs, tryIncremental) {
   const collectionPromises = []
 
   for (const spec of specs) {
     // use a different postgres client for each collection so we can have multiple isolated transactions in parallel
     const pgClient = await pgPool.connect()
 
-    const collectionPromise = importCollection(mongoClient, pgClient, spec, isIncremental)
+    const collectionPromise = importCollection(mongoClient, pgClient, spec, tryIncremental)
 
     // release client when done
     Bluebird.resolve(collectionPromise)
@@ -27,11 +27,10 @@ module.exports = async function importCollections (mongoClient, pgPool, specs, i
   return Promise.all(collectionPromises).then(collections => collections.length)
 }
 
-async function importCollection (mongoClient, pgClient, spec, isIncremental) {
+async function importCollection (mongoClient, pgClient, spec, tryIncremental) {
   const tableBody = schema.getTableBody(spec)
-  let cursor
 
-  if (isIncremental && spec.keys.incrementalReplicationKey) {
+  if (tryIncremental && spec.keys.incrementalReplicationKey) {
     // incremental import is possible
     await sql.query(pgClient, `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`)
 
@@ -42,10 +41,10 @@ async function importCollection (mongoClient, pgClient, spec, isIncremental) {
 
     const replicationKeyName = irk.source
     if (lastReplicationKeyValue) {
-      cursor = spec.source.getCollection(mongoClient)
+      const cursor = spec.source.getCollection(mongoClient)
         .find({ [replicationKeyName]: { $gt: lastReplicationKeyValue } })
 
-      console.log(`[${spec.ns}] Importing new and updated documents`)
+      console.log(`[${spec.ns}] Importing new and updated documents...`)
       await importDocs(spec, cursor, pgClient, incrementalImport)
       return
     }
@@ -54,7 +53,7 @@ async function importCollection (mongoClient, pgClient, spec, isIncremental) {
   await sql.query(pgClient, `DROP TABLE IF EXISTS "${spec.target.table}"`)
   await sql.query(pgClient, `CREATE TABLE "${spec.target.table}" (${tableBody})`)
 
-  cursor = spec.source.getCollection(mongoClient)
+  const cursor = spec.source.getCollection(mongoClient)
     .find({}, { projection: spec.source.fields })
 
   console.log(`[${spec.ns}] Importing all documents...`)
