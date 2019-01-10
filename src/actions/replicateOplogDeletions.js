@@ -37,6 +37,12 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
   await pgClient.release()
 
   const oplog = new Oplog(localDb)
+
+  if (lastReplicationKeyValue.length === 0) {
+    console.log(`[oplog] no incremental replication keys found.`)
+    return
+  }
+
   const docsCursor = await oplog.getNewOps(lastReplicationKeyValue)
 
   console.log(`[oplog] searching oplog for delete operations since ${lastReplicationKeyValue}...`)
