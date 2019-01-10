@@ -38,8 +38,8 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
 
   const oplog = new Oplog(localDb)
 
-  if (lastReplicationKeyValue.length === 0) {
-    console.log(`[oplog] no incremental replication keys found.`)
+  if (!lastReplicationKeyValue) {
+    console.log(`[oplog] no incremental replication key found.`)
     return
   }
 
