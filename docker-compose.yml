@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  halley:
+    build: .
+    environment:
+      HALLEY_MONGO: 'mongodb+srv://***REMOVED***'
+
+
