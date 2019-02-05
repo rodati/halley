@@ -21,7 +21,7 @@ function scriptToQueries (script) {
     // excess white space
     .replace(/\s+/g, ' ')
 
-    // split into all statements and remove any empty ones
+    // split into statements and remove empty ones
     .split(';')
     .map(s => s.trim())
     .filter(s => s.length)
