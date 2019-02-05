@@ -1,8 +1,8 @@
 'use strict'
 
-const omit = require('lodash/omit')
 const get = require('lodash/get')
 const { ObjectId } = require('mongodb')
+const omit = require('./omit')
 
 function getColumnNames (spec) {
   const { columns, extraProps } = spec.target
@@ -29,20 +29,7 @@ function getPlaceholders (spec) {
 function getTableBody (spec) {
   const tableBody = spec.target.columns.map(c => `"${c.name}" ${c.type}`)
   if (spec.target.extraProps) {
-    let extraPropsType
-
-    switch (spec.target.extraProps) {
-      case 'JSON':
-        extraPropsType = 'JSON'
-        break
-      case 'JSONB':
-        extraPropsType = 'JSONB'
-        break
-      default:
-        extraPropsType = 'TEXT'
-        break
-    }
-    tableBody.push(`_extra_props ${extraPropsType}`)
+    tableBody.push(`_extra_props ${spec.target.extraProps.type}`)
   }
   tableBody.push(
     `PRIMARY KEY (${spec.keys.primaryKey.map(k => `"${k.name}"`).join(',')})`
@@ -53,8 +40,6 @@ function getTableBody (spec) {
 
 function * transformValues (spec, doc) {
   const { columns, extraProps } = spec.target
-
-  const omittedFromExtraProps = []
 
   for (const column of columns) {
     const source = get(doc, column.source)
@@ -89,14 +74,11 @@ function * transformValues (spec, doc) {
     }
 
     yield value
-
-    if (!column.retainExtraProp) {
-      omittedFromExtraProps.push(column.source)
-    }
   }
 
   if (extraProps) {
-    yield JSON.stringify(omit(doc, omittedFromExtraProps), transformObjectValue)
+    const extraPropsDoc = extraProps.omit ? omit(doc, extraProps.omit) : doc
+    yield JSON.stringify(extraPropsDoc, transformObjectValue)
   }
 }
 

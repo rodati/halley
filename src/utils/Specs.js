@@ -1,5 +1,6 @@
 'use strict'
 
+const uniq = require('lodash/uniq')
 const yaml = require('js-yaml')
 const fs = require('fs')
 const { promisify } = require('util')
@@ -80,7 +81,7 @@ function getCollectionSpec (tableSpec, collectionName, databaseName) {
     deleteKey = 'id'
   }
 
-  const extraProps = meta[':extra_props']
+  const extraProps = getExtraPropsSpec(meta[':extra_props'], columns)
 
   // when extra props is present, we always need to project the entire source doc
   // TODO: we could use a suppression projection for fields that are omitted in extra props and unused by any column spec
@@ -113,6 +114,33 @@ function getCollectionSpec (tableSpec, collectionName, databaseName) {
         : null,
       deleteKey
     }
+  }
+}
+
+function getExtraPropsSpec (extraPropsSpec, columnsSpec) {
+  if (!extraPropsSpec) {
+    return null
+  }
+
+  let type = (extraPropsSpec[':type'] || extraPropsSpec).toLowerCase()
+  if (type !== 'json' && type !== 'jsonb' && type !== 'text') {
+    console.warn(`Unsupported extra props type "${type}" -- using default type "text"`)
+    type = 'text'
+  }
+
+  const fieldsToOmit = [
+    // omit field if it's not to be retained and it's not a deep path, since we can't omit deep fields
+    ...columnsSpec
+      .filter(c => !c.retainExtraProp && !c.source.includes('.'))
+      .map(c => c.source),
+
+    // omit other specified fields
+    ...(extraPropsSpec[':omit'] || [])
+  ]
+
+  return {
+    type,
+    omit: fieldsToOmit.length ? uniq(fieldsToOmit) : null
   }
 }
 
