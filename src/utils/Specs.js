@@ -48,14 +48,6 @@ function getCollectionSpec (tableSpec, collectionName, databaseName) {
   })
 
   const meta = tableSpec[':meta'] || {}
-  const extraProps = meta[':extra_props']
-
-  const fields = extraProps
-    ? null
-    : columns.reduce((memo, column) => {
-      memo[column.source] = 1
-      return memo
-    }, {})
 
   const findColumnByName = name => {
     const column = columns.find(c => c.name === name)
@@ -88,12 +80,23 @@ function getCollectionSpec (tableSpec, collectionName, databaseName) {
     deleteKey = 'id'
   }
 
+  const extraProps = meta[':extra_props']
+
+  // when extra props is present, we always need to project the entire source doc
+  // TODO: we could use a suppression projection for fields that are omitted in extra props and unused by any column spec
+  const projection = extraProps
+    ? null
+    : columns.reduce((memo, column) => {
+      memo[column.source] = 1
+      return memo
+    }, {})
+
   return {
     ns: `${databaseName}.${collectionName}`,
     source: new CollectionSpecSource({
       databaseName,
       collectionName,
-      fields
+      projection
     }),
     target: {
       table: meta[':table'] || collectionName,

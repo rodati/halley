@@ -54,7 +54,7 @@ async function importCollection (mongoClient, pgClient, spec, tryIncremental) {
   await sql.query(pgClient, `CREATE TABLE "${spec.target.table}" (${tableBody})`)
 
   const cursor = spec.source.getCollection(mongoClient)
-    .find({}, { projection: spec.source.fields })
+    .find({}, { projection: spec.source.projection })
 
   console.log(`[${spec.ns}] Importing all documents...`)
   await importDocs(spec, cursor, pgClient, fullImport)

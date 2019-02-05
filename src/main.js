@@ -66,7 +66,7 @@ module.exports = async function main (options) {
   async function syncObject (spec, selector) {
     const obj = await spec.source
       .getCollection(mongoClient)
-      .findOne(selector, { projection: spec.source.fields })
+      .findOne(selector, { projection: spec.source.projection })
 
     if (obj) {
       await upsert(spec, pgPool, obj)
