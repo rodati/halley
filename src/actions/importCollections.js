@@ -192,6 +192,7 @@ async function incrementalImport (spec, docs, pgClient) {
           spec,
           docId
         }
+        throw err
       }
     }
 
