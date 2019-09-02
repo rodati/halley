@@ -112,6 +112,10 @@ function getCollectionSpec (tableSpec, collectionName, databaseName) {
       incrementalReplicationKey: meta[':incremental_replication_key']
         ? findColumnByName(meta[':incremental_replication_key'])
         : null,
+      incrementalReplicationDirection: meta[':incremental_replication_direction'] === 'high_to_low'
+        ? -1
+        : 1,
+      incrementalReplicationLimit: meta[':incremental_replication_limit'],
       deleteKey
     }
   }

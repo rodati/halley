@@ -2,6 +2,7 @@
 
 const debug = require('debug')('halley')
 const Bluebird = require('bluebird')
+const { DateTime, Duration } = require('luxon')
 
 const schema = require('../utils/Schema')
 const sql = require('../interfaces/sql')
@@ -30,11 +31,12 @@ module.exports = async function importCollections (mongoClient, pgPool, specs, t
 async function importCollection (mongoClient, pgClient, spec, tryIncremental) {
   const tableBody = schema.getTableBody(spec)
 
-  if (tryIncremental && spec.keys.incrementalReplicationKey) {
+  const irk = spec.keys.incrementalReplicationKey
+
+  if (tryIncremental && irk) {
     // incremental import is possible
     await sql.query(pgClient, `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`)
 
-    const irk = spec.keys.incrementalReplicationKey
     const result = await sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
 
     const lastReplicationKeyValue = result.rows[0].max
@@ -53,10 +55,26 @@ async function importCollection (mongoClient, pgClient, spec, tryIncremental) {
   await sql.query(pgClient, `DROP TABLE IF EXISTS "${spec.target.table}"`)
   await sql.query(pgClient, `CREATE TABLE "${spec.target.table}" (${tableBody})`)
 
-  const cursor = spec.source.getCollection(mongoClient)
-    .find({}, { projection: spec.source.projection })
+  const irl = spec.keys.incrementalReplicationLimit
 
-  console.log(`[${spec.ns}] Importing all documents...`)
+  const query = {}
+  if (irk && irl) {
+    if (!irk.type.includes('timestamp')) {
+      console.log(`[${spec.ns}] Replication limit does not support keys of types other than TIMESTAMP`)
+    } else {
+      const dateLimit = DateTime.local().minus(Duration.fromISO(irl)).toJSDate()
+      query[irk.source] = {
+        $gte: dateLimit
+      }
+      console.log(`[${spec.ns}] Importing all documents from ${irl}...`)
+    }
+  } else {
+    console.log(`[${spec.ns}] Importing all documents...`)
+  }
+
+  const cursor = spec.source.getCollection(mongoClient)
+    .find(query, { projection: spec.source.projection })
+  
   await importDocs(spec, cursor, pgClient, fullImport)
 
   if (spec.target.tableInit) {
