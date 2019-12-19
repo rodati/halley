@@ -22,9 +22,9 @@ module.exports = async function main (options) {
 
   // connect to mongo
   const mongoClient = await MongoClient.connect(options.mongo, {
-    autoReconnect: true,
+    appname: 'halley',
     useNewUrlParser: true,
-    appname: 'halley'
+    useUnifiedTopology: true
   })
 
   // connect to pg
