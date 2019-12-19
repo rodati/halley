@@ -45,7 +45,7 @@ const argv = require('yargs')
 
   .option('db-mode', {
     describe: 'Listen to changes in a single or multiple databases',
-    choices: [ 'multi', 'single' ],
+    choices: ['multi', 'single'],
     default: 'multi'
   })
 

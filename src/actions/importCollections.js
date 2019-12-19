@@ -74,7 +74,7 @@ async function importCollection (mongoClient, pgClient, spec, tryIncremental) {
 
   const cursor = spec.source.getCollection(mongoClient)
     .find(query, { projection: spec.source.projection })
-  
+
   await importDocs(spec, cursor, pgClient, fullImport)
 
   if (spec.target.tableInit) {

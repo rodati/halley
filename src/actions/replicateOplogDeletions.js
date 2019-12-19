@@ -11,7 +11,7 @@ const Oplog = require('../utils/Oplog')
 const Schema = require('../utils/Schema')
 
 async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) {
-  console.log(`[oplog] Searching for last sync date ...`)
+  console.log('[oplog] Searching for last sync date ...')
   const pgClient = await pgPool.connect()
   const specs = values(rawSpecs)
   const selectMax = []
@@ -39,7 +39,7 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
   const oplog = new Oplog(localDb)
 
   if (!lastReplicationKeyValue) {
-    console.log(`[oplog] no incremental replication key found.`)
+    console.log('[oplog] no incremental replication key found.')
     return
   }
 
@@ -48,7 +48,7 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
   console.log(`[oplog] searching oplog for delete operations since ${lastReplicationKeyValue}...`)
 
   if (!docsCursor) {
-    console.log(`[oplog] No new delete operations found in oplog...`)
+    console.log('[oplog] No new delete operations found in oplog...')
     return
   }
   const collections = []
@@ -80,7 +80,7 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
     }
   }
 
-  console.log(`[oplog] Finished iterating oplog operations. Deleting batches in parallel...`)
+  console.log('[oplog] Finished iterating oplog operations. Deleting batches in parallel...')
 
   await Bluebird.map(collections, deleteBatch.bind(null, pgPool), { concurrency })
 }

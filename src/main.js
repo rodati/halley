@@ -117,7 +117,7 @@ module.exports = async function main (options) {
         }
         break
 
-      case 'u':
+      case 'u': {
         const { o2: selector, o: update } = op
 
         if (Object.keys(update).some(k => k.startsWith('$'))) {
@@ -141,6 +141,7 @@ module.exports = async function main (options) {
           await upsert(spec, pgPool, upsertObj)
         }
         break
+      }
 
       case 'd':
         switch (options.deleteMode) {

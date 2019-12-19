@@ -20,7 +20,7 @@ async function loadFromFile (filename, {
     reduceCollectionsSpec(specByNs, config, rootDatabase)
   } else {
     for (const database in config) {
-      if (config.hasOwnProperty(database)) {
+      if (Object.prototype.hasOwnProperty.call(config, database)) {
         reduceCollectionsSpec(specByNs, config[database], database)
       }
     }
@@ -31,7 +31,7 @@ async function loadFromFile (filename, {
 
 function reduceCollectionsSpec (memo, collectionsSpec, databaseName) {
   for (const collection in collectionsSpec) {
-    if (collectionsSpec.hasOwnProperty(collection)) {
+    if (Object.prototype.hasOwnProperty.call(collectionsSpec, collection)) {
       memo[`${databaseName}.${collection}`] = getCollectionSpec(collectionsSpec[collection], collection, databaseName)
     }
   }
@@ -39,7 +39,7 @@ function reduceCollectionsSpec (memo, collectionsSpec, databaseName) {
 
 function getCollectionSpec (tableSpec, collectionName, databaseName) {
   const columns = tableSpec[':columns'].map(columnSpec => {
-    const [ name ] = Object.keys(columnSpec)
+    const [name] = Object.keys(columnSpec)
     return {
       name,
       type: (columnSpec[':type'] || columnSpec[name]).toLowerCase(),
@@ -68,7 +68,7 @@ function getCollectionSpec (tableSpec, collectionName, databaseName) {
 
   const primaryKey = Array.isArray(meta[':composite_key'])
     ? meta[':composite_key'].map(findColumnByName)
-    : [ findColumnBySource('_id') ]
+    : [findColumnBySource('_id')]
 
   // add flag to pk columns
   for (const key of primaryKey) {
