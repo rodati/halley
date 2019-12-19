@@ -1,7 +1,7 @@
 'use strict'
 
 const get = require('lodash/get')
-const { ObjectId } = require('mongodb')
+const { ObjectId, Decimal128 } = require('mongodb')
 const omit = require('./omit')
 
 function getColumnNames (spec) {
@@ -52,6 +52,8 @@ function * transformValues (spec, doc) {
           value = null
         } else if (source instanceof ObjectId) {
           value = source.toHexString()
+        } else if (source instanceof Decimal128) {
+          value = source.toString()
         } else {
           value = JSON.stringify(source, transformObjectValue)
         }
