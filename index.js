@@ -54,6 +54,12 @@ const argv = require('yargs')
     string: true
   })
 
+  .option('exit-error', {
+    describe: 'If should exit the process on any error doing a full/incremental import or tailing the oplog',
+    boolean: true,
+    default: true,
+  })
+
   .help('h')
   .alias('help', 'h')
 
