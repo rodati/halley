@@ -16,13 +16,9 @@ const { getDeleteForConcurrency } = require('./actions/deleteSingle')
 let del
 let upsert
 
-let exitError
-
 module.exports = async function main (options) {
   upsert = getUpsertForConcurrency(options.concurrency)
   del = getDeleteForConcurrency(options.concurrency)
-
-  exitError = options.exitError
 
   // connect to mongo
   const mongoClient = await MongoClient.connect(options.mongo, {
@@ -191,10 +187,10 @@ function getLocalTimestamp () {
 
 process.on('unhandledRejection', err => {
   console.error(err)
-  exitError && process.exit(1)
+  process.exit(1)
 })
 
 process.on('uncaughtException', err => {
   console.error(err)
-  exitError && process.exit(1)
+  process.exit(1)
 })
