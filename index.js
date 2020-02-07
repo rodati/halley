@@ -60,6 +60,12 @@ const argv = require('yargs')
     default: false
   })
 
+  .option('drop-table', {
+    describe: 'If should drop the table before make a full import',
+    boolean: true,
+    default: true
+  })
+
   .help('h')
   .alias('help', 'h')
 

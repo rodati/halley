@@ -53,8 +53,11 @@ async function importCollection (mongoClient, pgClient, spec, options) {
     }
   }
 
-  await sql.query(pgClient, `DROP TABLE IF EXISTS "${spec.target.table}"`)
-  await sql.query(pgClient, `CREATE TABLE "${spec.target.table}" (${tableBody})`)
+  if (!options.dropTable) {
+    await sql.query(pgClient, `DROP TABLE IF EXISTS "${spec.target.table}"`)
+  }
+
+  await sql.query(pgClient, `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`)
 
   const irl = spec.keys.incrementalReplicationLimit
 
