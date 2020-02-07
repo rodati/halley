@@ -9,14 +9,14 @@ const sql = require('../interfaces/sql')
 const { upsert } = require('./upsertSingle')
 const copyBatch = require('./copyBatch')
 
-module.exports = async function importCollections (mongoClient, pgPool, specs, tryIncremental) {
+module.exports = async function importCollections (mongoClient, pgPool, specs, options) {
   const collectionPromises = []
 
   for (const spec of specs) {
     // use a different postgres client for each collection so we can have multiple isolated transactions in parallel
     const pgClient = await pgPool.connect()
 
-    const collectionPromise = importCollection(mongoClient, pgClient, spec, tryIncremental)
+    const collectionPromise = importCollection(mongoClient, pgClient, spec, options)
 
     // release client when done
     Bluebird.resolve(collectionPromise)
@@ -28,9 +28,10 @@ module.exports = async function importCollections (mongoClient, pgPool, specs, t
   return Promise.all(collectionPromises).then(collections => collections.length)
 }
 
-async function importCollection (mongoClient, pgClient, spec, tryIncremental) {
+async function importCollection (mongoClient, pgClient, spec, options) {
   const tableBody = schema.getTableBody(spec)
 
+  const tryIncremental = options.incrementalImport
   const irk = spec.keys.incrementalReplicationKey
 
   if (tryIncremental && irk) {
@@ -47,7 +48,7 @@ async function importCollection (mongoClient, pgClient, spec, tryIncremental) {
         .find({ [replicationKeyName]: { $gt: lastReplicationKeyValue } })
 
       console.log(`[${spec.ns}] Importing new and updated documents...`)
-      await importDocs(spec, cursor, pgClient, incrementalImport)
+      await importDocs(spec, cursor, pgClient, incrementalImport, options)
       return
     }
   }
@@ -75,7 +76,7 @@ async function importCollection (mongoClient, pgClient, spec, tryIncremental) {
   const cursor = spec.source.getCollection(mongoClient)
     .find(query, { projection: spec.source.projection })
 
-  await importDocs(spec, cursor, pgClient, fullImport)
+  await importDocs(spec, cursor, pgClient, fullImport, options)
 
   if (spec.target.tableInit) {
     console.log(`[${spec.ns}] Initializing table "${spec.target.table}"...`)
@@ -93,7 +94,7 @@ async function importCollection (mongoClient, pgClient, spec, tryIncremental) {
  * @param {MongoDB.cursor} cursor ** a mongodb cursor
  * @param {Function} importFn ** the function used to import
  */
-async function importDocs (spec, cursor, pgClient, importFn) {
+async function importDocs (spec, cursor, pgClient, importFn, options) {
   let docs = []
   let acc = 0
   let more = await cursor.hasNext()
@@ -104,7 +105,7 @@ async function importDocs (spec, cursor, pgClient, importFn) {
     more = await cursor.hasNext()
 
     if (docs.length === 1000 || !more) {
-      await importFn(spec, docs, pgClient)
+      await importFn(spec, docs, pgClient, options)
       acc += docs.length
       docs = []
 
@@ -113,7 +114,7 @@ async function importDocs (spec, cursor, pgClient, importFn) {
   }
 }
 
-async function fullImport (spec, docs, pgClient) {
+async function fullImport (spec, docs, pgClient, options) {
   try {
     const importResult = await copyBatch(spec, docs, pgClient)
     return importResult
@@ -153,14 +154,18 @@ async function fullImport (spec, docs, pgClient) {
             spec,
             docId
           }
-          throw err
+          if (options.exitError) {
+            throw err
+          } else {
+            console.log(err)
+          }
         }
       }
     }
   }
 }
 
-async function incrementalImport (spec, docs, pgClient) {
+async function incrementalImport (spec, docs, pgClient, options) {
   const tableName = spec.target.table
   const tempTableName = `${tableName}_copy_temp`
   const body = schema.getTableBody(spec)
@@ -210,7 +215,11 @@ async function incrementalImport (spec, docs, pgClient) {
           spec,
           docId
         }
-        throw err
+        if (options.exitError) {
+          throw err
+        } else {
+          console.log(err)
+        }
       }
     }
 

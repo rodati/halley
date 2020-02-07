@@ -61,15 +61,7 @@ module.exports = async function main (options) {
   }
 
   // import
-  try {
-    await importCollections(mongoClient, pgPool, values(specs), options.incrementalImport)
-  } catch (error) {
-    if(exitError){
-      throw error
-    } else {
-      console.log(error)
-    }
-  }
+  await importCollections(mongoClient, pgPool, values(specs), options)
 
   const oplog = oplogUtil.observableTail({
     fromTimestamp: tailFrom
