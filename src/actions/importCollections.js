@@ -154,10 +154,10 @@ async function fullImport (spec, docs, pgClient, options) {
             spec,
             docId
           }
-          if (options.exitError) {
-            throw err
-          } else {
+          if (options.continueOnError) {
             console.log(err)
+          } else {
+            throw err
           }
         }
       }
@@ -215,10 +215,10 @@ async function incrementalImport (spec, docs, pgClient, options) {
           spec,
           docId
         }
-        if (options.exitError) {
-          throw err
-        } else {
+        if (options.continueOnError) {
           console.log(err)
+        } else {
+          throw err
         }
       }
     }
