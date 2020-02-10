@@ -17,6 +17,8 @@ let del
 let upsert
 
 module.exports = async function main (options) {
+  console.log(`Starting halley with options ${JSON.stringify(options)}`)
+  
   upsert = getUpsertForConcurrency(options.concurrency)
   del = getDeleteForConcurrency(options.concurrency)
 
