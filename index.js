@@ -54,16 +54,16 @@ const argv = require('yargs')
     string: true
   })
 
-  .option('continue-on-error', {
-    describe: 'If should continue the process on any error doing a full/incremental import',
-    boolean: false,
+  .option('exit-on-error', {
+    describe: 'If should stop the process on any error doing a full/incremental import',
+    boolean: true,
     default: false
   })
 
-  .option('drop-table', {
-    describe: 'If should drop the table before make a full import',
+  .option('table-init', {
+    describe: 'Making a full import: if should drop and create the postgres table where will be imported the documents and runs the table_init commands after the importation was done',
     boolean: true,
-    default: true
+    default: false
   })
 
   .help('h')
