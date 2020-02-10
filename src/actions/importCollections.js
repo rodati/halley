@@ -60,7 +60,7 @@ async function importCollection (mongoClient, pgClient, spec, options) {
 
   if (options.tableInit) {
     await sql.query(pgClient, `DROP TABLE IF EXISTS "${spec.target.table}"`)
-    await sql.query(pgClient, `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`)
+    await sql.query(pgClient, `CREATE TABLE "${spec.target.table}" (${tableBody})`)
   } else {
     console.log(`[${spec.ns}] Bypassing drop & create table...`)
   }
