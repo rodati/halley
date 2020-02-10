@@ -34,22 +34,27 @@ async function importCollection (mongoClient, pgClient, spec, options) {
   const tryIncremental = options.incrementalImport
   const irk = spec.keys.incrementalReplicationKey
 
-  if (tryIncremental && irk) {
-    // incremental import is possible
-    await sql.query(pgClient, `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`)
+  if (tryIncremental) {
 
-    const result = await sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
+    if(irk){
+      // incremental import is possible
+      await sql.query(pgClient, `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`)
 
-    const lastReplicationKeyValue = result.rows[0].max
+      const result = await sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
 
-    const replicationKeyName = irk.source
-    if (lastReplicationKeyValue) {
-      const cursor = spec.source.getCollection(mongoClient)
-        .find({ [replicationKeyName]: { $gt: lastReplicationKeyValue } })
+      const lastReplicationKeyValue = result.rows[0].max
 
-      console.log(`[${spec.ns}] Importing new and updated documents...`)
-      await importDocs(spec, cursor, pgClient, incrementalImport, options)
-      return
+      const replicationKeyName = irk.source
+      if (lastReplicationKeyValue) {
+        const cursor = spec.source.getCollection(mongoClient)
+          .find({ [replicationKeyName]: { $gt: lastReplicationKeyValue } })
+
+        console.log(`[${spec.ns}] Importing new and updated documents...`)
+        await importDocs(spec, cursor, pgClient, incrementalImport, options)
+        return
+      }
+    } else {
+      console.log(`[${spec.ns}] Missing incremental_replication_key to make incremental import, doing full import...`)
     }
   }
 
