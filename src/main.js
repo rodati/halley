@@ -168,10 +168,10 @@ module.exports = async function main (options) {
     return handleOp(op).catch(innerErr => {
       const error = new Error(`Could not process op: ${JSON.stringify(op)}`)
       error.innerError = innerErr
-      if (options.continueOnError) {
-        console.log(error)
-      } else {
+      if (options.exitOnError) {
         throw error
+      } else {
+        console.log(error)
       }
     })
   }
