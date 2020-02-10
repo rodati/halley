@@ -53,7 +53,7 @@ async function importCollection (mongoClient, pgClient, spec, options) {
     }
   }
 
-  if (options.initTable) {
+  if (options.tableInit) {
     await sql.query(pgClient, `DROP TABLE IF EXISTS "${spec.target.table}"`)
     await sql.query(pgClient, `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`)
   }
@@ -80,7 +80,7 @@ async function importCollection (mongoClient, pgClient, spec, options) {
 
   await importDocs(spec, cursor, pgClient, fullImport, options)
 
-  if (spec.target.tableInit && options.initTable) {
+  if (spec.target.tableInit && options.tableInit) {
     console.log(`[${spec.ns}] Initializing table "${spec.target.table}"...`)
 
     const queries = spec.target.tableInit
