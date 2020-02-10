@@ -56,6 +56,8 @@ async function importCollection (mongoClient, pgClient, spec, options) {
   if (options.tableInit) {
     await sql.query(pgClient, `DROP TABLE IF EXISTS "${spec.target.table}"`)
     await sql.query(pgClient, `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`)
+  } else {
+    console.log(`[${spec.ns}] Bypassing drop & create table...`)
   }
 
   const irl = spec.keys.incrementalReplicationLimit
@@ -89,6 +91,8 @@ async function importCollection (mongoClient, pgClient, spec, options) {
       const result = await sql.query(pgClient, queries[i])
       debug(`[${spec.ns}] [${i + 1}/${queries.length}] result:`, result)
     }
+  } else {
+    console.log(`[${spec.ns}] Bypassing initializing table...`)
   }
 }
 
