@@ -109,6 +109,7 @@ function getCollectionSpec (tableSpec, collectionName, databaseName) {
     },
     keys: {
       primaryKey,
+      incrementalReplicationLastSyncLimit: meta[':incremental_replication_last_sync_limit'],
       incrementalReplicationKey: meta[':incremental_replication_key']
         ? findColumnByName(meta[':incremental_replication_key'])
         : null,
