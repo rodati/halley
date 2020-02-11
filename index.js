@@ -63,7 +63,7 @@ const argv = require('yargs')
   .option('table-init', {
     describe: 'Making a full import: if should drop and create the postgres table where will be imported the documents and runs the table_init commands after the importation was done',
     boolean: true,
-    default: false
+    default: true
   })
 
   .help('h')
