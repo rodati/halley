@@ -9,6 +9,7 @@ const sql = require('../interfaces/sql')
 const { endOfStream } = require('../utils/stream')
 const Oplog = require('../utils/Oplog')
 const Schema = require('../utils/Schema')
+const { DateTime, Duration } = require('luxon')
 
 async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) {
   console.log('[oplog] Searching for last sync date ...')
@@ -19,8 +20,18 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
   for (const spec of specs) {
     // specs without a IRK will get fully imported anyway, skip them.
     const irk = spec.keys.incrementalReplicationKey
+    const irlsl = spec.keys.incrementalReplicationLastSyncLimit
+    
     if (irk) {
-      const max = sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
+      let max
+      if(irlsl){
+        const dateLimit = DateTime.local().minus(Duration.fromISO(irlsl)).toISODate();
+        max = sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}" WHERE "${irk.name}" >= '${dateLimit}'`)
+        console.log(max)
+      } else {
+        max = sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
+      }
+      
       replicableSpecs.push(spec.ns)
       selectMax.push(max)
     }

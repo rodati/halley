@@ -32,12 +32,20 @@ async function importCollection (mongoClient, pgClient, spec, tryIncremental) {
   const tableBody = schema.getTableBody(spec)
 
   const irk = spec.keys.incrementalReplicationKey
+  const irlsl = spec.keys.incrementalReplicationLastSyncLimit
 
   if (tryIncremental && irk) {
     // incremental import is possible
     await sql.query(pgClient, `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`)
+    
+    let result
 
-    const result = await sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
+    if(irlsl){
+      const dateLimit = DateTime.local().minus(Duration.fromISO(irlsl)).toISODate();
+      result = await sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}" WHERE "${irk.name}" >= '${dateLimit}'`)
+    } else {
+      result = await sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
+    }
 
     const lastReplicationKeyValue = result.rows[0].max
 
