@@ -54,9 +54,9 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
     return
   }
 
-  const docsCursor = await oplog.getNewOps(lastReplicationKeyValue)
-
   console.log(`[oplog] searching oplog for delete operations since ${lastReplicationKeyValue}...`)
+
+  const docsCursor = await oplog.getNewOps(lastReplicationKeyValue)
 
   if (!docsCursor) {
     console.log('[oplog] No new delete operations found in oplog...')
