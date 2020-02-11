@@ -42,7 +42,7 @@ async function importCollection (mongoClient, pgClient, spec, tryIncremental) {
 
     if(irlsl){
       const dateLimit = DateTime.local().minus(Duration.fromISO(irlsl)).toISODate();
-      console.log(`Using last sync limit "${irk.name}" >= '${dateLimit}'`)
+      console.log(`[${spec.ns}] Using last sync limit "${irk.name}" >= '${dateLimit}' for import`)
       result = await sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}" WHERE "${irk.name}" >= '${dateLimit}'`)
     } else {
       result = await sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
