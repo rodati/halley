@@ -27,7 +27,6 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
       if(irlsl){
         const dateLimit = DateTime.local().minus(Duration.fromISO(irlsl)).toISODate();
         max = sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}" WHERE "${irk.name}" >= '${dateLimit}'`)
-        console.log(max)
       } else {
         max = sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
       }
