@@ -34,26 +34,72 @@ async function upsert (spec, pgClient, doc) {
     keys.push(key.name)
   }
 
-  try {
-    // use prepared statements so that pg can cache them
-    const result = await sql.query(pgClient, {
-      name: `upsert-u-${spec.ns}`,
-      text: `INSERT INTO "${table}" (${columnNames.join(',')}) 
-             VALUES (${placeholders.join(',')})
-             ON CONFLICT (${keys.join(',')}) DO UPDATE
-             SET ${updates.join(',')} 
-             WHERE ${whereClauses.join(' AND ')}`,
+  const isTablePartitioned = spec.keys.partitioned || false
 
-      values
-    })
+  // Note: The ON CONFLICT command doesn't work in partitioned tables in Postgres < 11, 
+  // so for that we use a workaround to make the upsert
+  if(isTablePartitioned){
 
-    if (result.rowCount > 1) {
-      console.warn(`Huh? Updated ${result.rowCount} > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`)
+    try {
+      await sql.query(pgClient, {
+        name: `insert-u-${spec.ns}`,
+        text: `INSERT INTO "${table}" (${columnNames.join(',')}) 
+               VALUES (${placeholders.join(',')})`,
+  
+        values
+      })
+    } catch (error) {
+      // If the insert fails for unique_violation, try the update
+      // https://www.postgresql.org/docs/9.2/errcodes-appendix.html
+      if (error.name === 'PgError' && error.innerError && error.innerError.code === '23505') {
+
+        try {
+          const resultUpdate = await sql.query(pgClient, {
+            name: `update-u-${spec.ns}`,
+            text: `UPDATE "${table}"
+                   SET ${updates.join(',')} 
+                   WHERE ${whereClauses.join(' AND ')}`,
+      
+            values
+          })
+
+          if (resultUpdate.rowCount > 1) {
+            console.warn(`Huh? Updated ${resultUpdate.rowCount} > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`)
+          }
+        } catch (error) {
+          await sql.query(pgClient, 'ROLLBACK')
+          throw error
+        }
+
+      } else {
+        throw error
+      }
+      
     }
-  } catch (error) {
-    await sql.query(pgClient, 'ROLLBACK')
-    throw error
+
+  } else {
+    try {
+      // use prepared statements so that pg can cache them
+      const result = await sql.query(pgClient, {
+        name: `upsert-u-${spec.ns}`,
+        text: `INSERT INTO "${table}" (${columnNames.join(',')}) 
+               VALUES (${placeholders.join(',')})
+               ON CONFLICT (${keys.join(',')}) DO UPDATE
+               SET ${updates.join(',')} 
+               WHERE ${whereClauses.join(' AND ')}`,
+  
+        values
+      })
+  
+      if (result.rowCount > 1) {
+        console.warn(`Huh? Updated ${result.rowCount} > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`)
+      }
+    } catch (error) {
+      await sql.query(pgClient, 'ROLLBACK')
+      throw error
+    }
   }
+  
 }
 
 async function lockeableUpsert (spec, pgPool, doc) {
