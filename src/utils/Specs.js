@@ -30,11 +30,7 @@ async function loadFromFile(filename, { rootDatabase = null } = {}) {
 function reduceCollectionsSpec(memo, collectionsSpec, databaseName) {
   for (const collection in collectionsSpec) {
     if (Object.prototype.hasOwnProperty.call(collectionsSpec, collection)) {
-      memo[`${databaseName}.${collection}`] = getCollectionSpec(
-        collectionsSpec[collection],
-        collection,
-        databaseName
-      )
+      memo[`${databaseName}.${collection}`] = getCollectionSpec(collectionsSpec[collection], collection, databaseName)
     }
   }
 }
@@ -103,21 +99,17 @@ function getCollectionSpec(tableSpec, collectionName, databaseName) {
     }),
     target: {
       table: meta[':table'] || collectionName,
-      tableInit: meta[':table_init']
-        ? sql.scriptToQueries(meta[':table_init'])
-        : null,
+      tableInit: meta[':table_init'] ? sql.scriptToQueries(meta[':table_init']) : null,
       columns,
       extraProps
     },
     keys: {
       primaryKey,
-      incrementalReplicationLastSyncLimit:
-        meta[':incremental_replication_last_sync_limit'],
+      incrementalReplicationLastSyncLimit: meta[':incremental_replication_last_sync_limit'],
       incrementalReplicationKey: meta[':incremental_replication_key']
         ? findColumnByName(meta[':incremental_replication_key'])
         : null,
-      incrementalReplicationDirection:
-        meta[':incremental_replication_direction'] === 'high_to_low' ? -1 : 1,
+      incrementalReplicationDirection: meta[':incremental_replication_direction'] === 'high_to_low' ? -1 : 1,
       incrementalReplicationLimit: meta[':incremental_replication_limit'],
       deleteKey
     }
@@ -131,17 +123,13 @@ function getExtraPropsSpec(extraPropsSpec, columnsSpec) {
 
   let type = (extraPropsSpec[':type'] || extraPropsSpec).toLowerCase()
   if (type !== 'json' && type !== 'jsonb' && type !== 'text') {
-    console.warn(
-      `Unsupported extra props type "${type}" -- using default type "text"`
-    )
+    console.warn(`Unsupported extra props type "${type}" -- using default type "text"`)
     type = 'text'
   }
 
   const fieldsToOmit = [
     // omit field if it's not to be retained and it's not a deep path, since we can't omit deep fields
-    ...columnsSpec
-      .filter((c) => !c.retainExtraProp && !c.source.includes('.'))
-      .map((c) => c.source),
+    ...columnsSpec.filter((c) => !c.retainExtraProp && !c.source.includes('.')).map((c) => c.source),
 
     // omit other specified fields
     ...(extraPropsSpec[':omit'] || [])

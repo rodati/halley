@@ -17,9 +17,7 @@ async function deleteInner(spec, pgPool, doc) {
     })
 
     if (deleteResult.rowCount === 0) {
-      console.warn(
-        `[${spec.ns}] Huh? document with id: ${_id} was deleted in mongo, but was not found in postgres db`
-      )
+      console.warn(`[${spec.ns}] Huh? document with id: ${_id} was deleted in mongo, but was not found in postgres db`)
     }
   } finally {
     pgClient.release()
@@ -27,13 +25,7 @@ async function deleteInner(spec, pgPool, doc) {
 }
 
 function getDeleteForConcurrency(concurrency) {
-  return concurrency > 1
-    ? lockUtil.lockify(
-        deleteInner,
-        lockUtil.getPromisifiedLock(),
-        (spec) => spec.ns
-      )
-    : deleteInner
+  return concurrency > 1 ? lockUtil.lockify(deleteInner, lockUtil.getPromisifiedLock(), (spec) => spec.ns) : deleteInner
 }
 
 module.exports = {

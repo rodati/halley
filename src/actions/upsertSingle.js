@@ -48,11 +48,7 @@ async function upsert(spec, pgClient, doc) {
     })
 
     if (result.rowCount > 1) {
-      console.warn(
-        `Huh? Updated ${
-          result.rowCount
-        } > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`
-      )
+      console.warn(`Huh? Updated ${result.rowCount} > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`)
     }
   } catch (error) {
     await sql.query(pgClient, 'ROLLBACK')
@@ -72,11 +68,7 @@ async function lockeableUpsert(spec, pgPool, doc) {
 function getUpsertForConcurrency(concurrency) {
   return concurrency > 1
     ? // lock upsert by ns to avoid concurrent upserts on the same collection
-      lockUtil.lockify(
-        lockeableUpsert,
-        lockUtil.getPromisifiedLock(),
-        (spec) => spec.ns
-      )
+      lockUtil.lockify(lockeableUpsert, lockUtil.getPromisifiedLock(), (spec) => spec.ns)
     : upsert
 }
 

@@ -43,10 +43,7 @@ module.exports = async function main(options) {
 
   console.log('Connections established successfully...')
 
-  const rootDatabase =
-    options.dbMode === 'single'
-      ? options.dbName || mongoClient.db().databaseName
-      : null
+  const rootDatabase = options.dbMode === 'single' ? options.dbName || mongoClient.db().databaseName : null
 
   const specs = await Specs.loadFromFile(options.collections, {
     rootDatabase
@@ -60,21 +57,14 @@ module.exports = async function main(options) {
   }
 
   // import
-  await importCollections(
-    mongoClient,
-    pgPool,
-    values(specs),
-    options.incrementalImport
-  )
+  await importCollections(mongoClient, pgPool, values(specs), options.incrementalImport)
 
   const oplog = oplogUtil.observableTail({
     fromTimestamp: tailFrom
   })
 
   async function syncObject(spec, selector) {
-    const obj = await spec.source
-      .getCollection(mongoClient)
-      .findOne(selector, { projection: spec.source.projection })
+    const obj = await spec.source.getCollection(mongoClient).findOne(selector, { projection: spec.source.projection })
 
     if (obj) {
       await upsert(spec, pgPool, obj)
@@ -162,10 +152,7 @@ module.exports = async function main(options) {
             break
 
           default:
-            console.warn(
-              `Unknown delete mode "${options.deleteMode}" on ${ns}`,
-              op.o.toString()
-            )
+            console.warn(`Unknown delete mode "${options.deleteMode}" on ${ns}`, op.o.toString())
             break
         }
         break
