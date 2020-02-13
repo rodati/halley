@@ -46,7 +46,7 @@ const argv = require('yargs')
   .option('db-mode', {
     describe: 'Listen to changes in a single or multiple databases',
     choices: ['multi', 'single'],
-    default: 'multi'
+    default: 'single'
   })
 
   .option('db-name', {
@@ -62,7 +62,8 @@ const argv = require('yargs')
   })
 
   .option('table-init', {
-    describe: 'Making a full import: if should drop and create the postgres table where will be imported the documents and runs the table_init commands after the importation was done',
+    describe:
+      'Making a full import: if should drop and create the postgres table where will be imported the documents and runs the table_init commands after the importation was done',
     boolean: true,
     default: true
   })
