@@ -16,9 +16,7 @@ function endOfStream(stream) {
     }
 
     function cleanup() {
-      stream
-        .removeListener('end', endHandler)
-        .removeListener('error', errorHandler)
+      stream.removeListener('end', endHandler).removeListener('error', errorHandler)
     }
 
     stream.on('end', endHandler).on('error', errorHandler)

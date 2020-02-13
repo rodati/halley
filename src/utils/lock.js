@@ -27,11 +27,7 @@ function promisifyRelease(release) {
     })
 }
 
-function lockify(
-  fn,
-  lockInstance,
-  lockEntityResolver = defaultLockEntityResolver
-) {
+function lockify(fn, lockInstance, lockEntityResolver = defaultLockEntityResolver) {
   return async function lockifyWrapper(...args) {
     const entity = lockEntityResolver(...args)
 

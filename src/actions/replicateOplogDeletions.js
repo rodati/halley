@@ -28,18 +28,13 @@ async function replicateOplogDeletions(rawSpecs, pgPool, localDb, concurrency) {
         const dateLimit = DateTime.local()
           .minus(Duration.fromISO(irlsl))
           .toISODate()
-        console.log(
-          `[oplog] Using last sync limit "${irk.name}" >= '${dateLimit}' for delete operations`
-        )
+        console.log(`[oplog] Using last sync limit "${irk.name}" >= '${dateLimit}' for delete operations`)
         max = sql.query(
           pgClient,
           `SELECT MAX("${irk.name}") FROM "${spec.target.table}" WHERE "${irk.name}" >= '${dateLimit}'`
         )
       } else {
-        max = sql.query(
-          pgClient,
-          `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`
-        )
+        max = sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
       }
 
       replicableSpecs.push(spec.ns)
@@ -64,9 +59,7 @@ async function replicateOplogDeletions(rawSpecs, pgPool, localDb, concurrency) {
     return
   }
 
-  console.log(
-    `[oplog] searching oplog for delete operations since ${lastReplicationKeyValue}...`
-  )
+  console.log(`[oplog] searching oplog for delete operations since ${lastReplicationKeyValue}...`)
 
   const docsCursor = await oplog.getNewOps(lastReplicationKeyValue)
 
@@ -87,15 +80,11 @@ async function replicateOplogDeletions(rawSpecs, pgPool, localDb, concurrency) {
       // the delete operation belongs to a foreign spec or to a spec without an IRK
       continue
     }
-    const collection = collections.find(
-      (collection) => collection.spec.ns === namespace
-    )
+    const collection = collections.find((collection) => collection.spec.ns === namespace)
     if (collection) {
       collection.values.push(doc.o._id)
       if (collection.values.length === 1000) {
-        console.log(
-          `[${namespace}] Reached batch size. Processing batch before continuing`
-        )
+        console.log(`[${namespace}] Reached batch size. Processing batch before continuing`)
         await deleteBatch(pgPool, collection)
         delete collection.values
       }
@@ -107,9 +96,7 @@ async function replicateOplogDeletions(rawSpecs, pgPool, localDb, concurrency) {
     }
   }
 
-  console.log(
-    '[oplog] Finished iterating oplog operations. Deleting batches in parallel...'
-  )
+  console.log('[oplog] Finished iterating oplog operations. Deleting batches in parallel...')
 
   await Bluebird.map(collections, deleteBatch.bind(null, pgPool), {
     concurrency
@@ -131,14 +118,9 @@ async function deleteBatch(pgPool, collection) {
   const tempTableName = `${tableName}_del_temp`
 
   const pgClient = await pgPool.connect()
-  await sql.query(
-    pgClient,
-    `CREATE TEMPORARY TABLE "${tempTableName}" ("${key}" TEXT, PRIMARY KEY ("${key}"))`
-  )
+  await sql.query(pgClient, `CREATE TEMPORARY TABLE "${tempTableName}" ("${key}" TEXT, PRIMARY KEY ("${key}"))`)
 
-  const targetStream = pgClient.query(
-    copyFrom(`COPY "${tempTableName}" ("${key}") FROM STDIN`)
-  )
+  const targetStream = pgClient.query(copyFrom(`COPY "${tempTableName}" ("${key}") FROM STDIN`))
 
   const data = values.map((doc) => Schema.escapeText(doc.toString()))
   const sourceStream = new Readable()

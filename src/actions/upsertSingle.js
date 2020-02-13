@@ -50,11 +50,7 @@ async function upsert(spec, pgClient, doc) {
     } catch (error) {
       // If the insert fails for unique_violation, try the update
       // https://www.postgresql.org/docs/9.2/errcodes-appendix.html
-      if (
-        error.name === 'PgError' &&
-        error.innerError &&
-        error.innerError.code === '23505'
-      ) {
+      if (error.name === 'PgError' && error.innerError && error.innerError.code === '23505') {
         try {
           const resultUpdate = await sql.query(pgClient, {
             name: `update-u-${spec.ns}`,
@@ -66,11 +62,7 @@ async function upsert(spec, pgClient, doc) {
           })
 
           if (resultUpdate.rowCount > 1) {
-            console.warn(
-              `Huh? Updated ${
-                resultUpdate.rowCount
-              } > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`
-            )
+            console.warn(`Huh? Updated ${resultUpdate.rowCount} > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`)
           }
         } catch (error) {
           await sql.query(pgClient, 'ROLLBACK')
@@ -95,11 +87,7 @@ async function upsert(spec, pgClient, doc) {
       })
 
       if (result.rowCount > 1) {
-        console.warn(
-          `Huh? Updated ${
-            result.rowCount
-          } > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`
-        )
+        console.warn(`Huh? Updated ${result.rowCount} > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`)
       }
     } catch (error) {
       await sql.query(pgClient, 'ROLLBACK')
@@ -120,11 +108,7 @@ async function lockeableUpsert(spec, pgPool, doc) {
 function getUpsertForConcurrency(concurrency) {
   return concurrency > 1
     ? // lock upsert by ns to avoid concurrent upserts on the same collection
-      lockUtil.lockify(
-        lockeableUpsert,
-        lockUtil.getPromisifiedLock(),
-        (spec) => spec.ns
-      )
+      lockUtil.lockify(lockeableUpsert, lockUtil.getPromisifiedLock(), (spec) => spec.ns)
     : upsert
 }
 

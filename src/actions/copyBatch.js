@@ -9,9 +9,7 @@ async function copyBatch(spec, docs, pgClient, tableName) {
   const columns = Schema.getColumnNames(spec)
   const table = tableName || spec.target.table
 
-  const targetStream = pgClient.query(
-    copyFrom(`COPY "${table}" (${columns.join(',')}) FROM STDIN`)
-  )
+  const targetStream = pgClient.query(copyFrom(`COPY "${table}" (${columns.join(',')}) FROM STDIN`))
 
   const data = docs.map((doc) => Schema.toTextFormat(spec, doc))
 

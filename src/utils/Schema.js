@@ -31,9 +31,7 @@ function getTableBody(spec) {
   if (spec.target.extraProps) {
     tableBody.push(`_extra_props ${spec.target.extraProps.type}`)
   }
-  tableBody.push(
-    `PRIMARY KEY (${spec.keys.primaryKey.map((k) => `"${k.name}"`).join(',')})`
-  )
+  tableBody.push(`PRIMARY KEY (${spec.keys.primaryKey.map((k) => `"${k.name}"`).join(',')})`)
 
   return tableBody.join(',')
 }
@@ -62,11 +60,7 @@ function* transformValues(spec, doc) {
         value = null
         break
       case 'number':
-        if (
-          column.type === 'smallint' ||
-          column.type === 'integer' ||
-          column.type === 'bigint'
-        ) {
+        if (column.type === 'smallint' || column.type === 'integer' || column.type === 'bigint') {
           value = Math.trunc(source)
         } else {
           value = source
