@@ -32,31 +32,34 @@ async function importCollection(mongoClient, pgClient, spec, options) {
 
   const tryIncremental = options.incrementalImport
   const irk = spec.keys.incrementalReplicationKey
-  const irlsl = spec.keys.incrementalReplicationLastSyncLimit
+  const irl = spec.keys.incrementalReplicationLimit
 
+  // Try incremental import if is possible
   if (tryIncremental) {
     if (irk) {
-      // incremental import is possible
-      await sql.query(pgClient, `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`)
-
-      let result
-
-      if (irlsl) {
-        const dateLimit = DateTime.local()
-          .minus(Duration.fromISO(irlsl))
-          .toISODate()
-        console.log(`[${spec.ns}] Using last sync limit "${irk.name}" >= '${dateLimit}' for import`)
-        result = await sql.query(
-          pgClient,
-          `SELECT MAX("${irk.name}") FROM "${spec.target.table}" WHERE "${irk.name}" >= '${dateLimit}'`
-        )
-      } else {
-        result = await sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
+      if (options.tableInit) {
+        await sql.query(pgClient, `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`)
       }
 
-      const lastReplicationKeyValue = result.rows[0].max
+      let lastReplicationKeyValue
+
+      if (irl) {
+        if (!irk.type.includes('timestamp')) {
+          console.log(`[${spec.ns}] Replication limit does not support keys of types other than TIMESTAMP`)
+        } else {
+          lastReplicationKeyValue = DateTime.local()
+            .minus(Duration.fromISO(irl))
+            .toJSDate()
+
+          console.log(`[${spec.ns}] Updating & importing all documents from ${lastReplicationKeyValue}...`)
+        }
+      } else {
+        const result = await sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
+        lastReplicationKeyValue = result.rows[0].max
+      }
 
       const replicationKeyName = irk.source
+
       if (lastReplicationKeyValue) {
         const cursor = spec.source
           .getCollection(mongoClient)
@@ -65,6 +68,10 @@ async function importCollection(mongoClient, pgClient, spec, options) {
         console.log(`[${spec.ns}] Importing new and updated documents...`)
         await importDocs(spec, cursor, pgClient, incrementalImport, options)
         return
+      } else {
+        console.log(
+          `[${spec.ns}] Missing last replication value to make incremental import (the table is empty?), doing full import...`
+        )
       }
     } else {
       console.log(`[${spec.ns}] Missing incremental_replication_key to make incremental import, doing full import...`)
@@ -78,9 +85,8 @@ async function importCollection(mongoClient, pgClient, spec, options) {
     console.log(`[${spec.ns}] Bypassing drop & create table...`)
   }
 
-  const irl = spec.keys.incrementalReplicationLimit
-
   const query = {}
+
   if (irk && irl) {
     if (!irk.type.includes('timestamp')) {
       console.log(`[${spec.ns}] Replication limit does not support keys of types other than TIMESTAMP`)
