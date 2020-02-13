@@ -9,26 +9,37 @@ const sql = require('../interfaces/sql')
 const { upsert } = require('./upsertSingle')
 const copyBatch = require('./copyBatch')
 
-module.exports = async function importCollections (mongoClient, pgPool, specs, options) {
+module.exports = async function importCollections(
+  mongoClient,
+  pgPool,
+  specs,
+  options
+) {
   const collectionPromises = []
 
   for (const spec of specs) {
     // use a different postgres client for each collection so we can have multiple isolated transactions in parallel
     const pgClient = await pgPool.connect()
 
-    const collectionPromise = importCollection(mongoClient, pgClient, spec, options)
+    const collectionPromise = importCollection(
+      mongoClient,
+      pgClient,
+      spec,
+      options
+    )
 
     // release client when done
-    Bluebird.resolve(collectionPromise)
-      .finally(() => pgClient.release())
+    Bluebird.resolve(collectionPromise).finally(() => pgClient.release())
 
     collectionPromises.push(collectionPromise)
   }
 
-  return Promise.all(collectionPromises).then(collections => collections.length)
+  return Promise.all(collectionPromises).then(
+    (collections) => collections.length
+  )
 }
 
-async function importCollection (mongoClient, pgClient, spec, options) {
+async function importCollection(mongoClient, pgClient, spec, options) {
   const tableBody = schema.getTableBody(spec)
 
   const tryIncremental = options.incrementalImport
@@ -36,26 +47,39 @@ async function importCollection (mongoClient, pgClient, spec, options) {
   const irlsl = spec.keys.incrementalReplicationLastSyncLimit
 
   if (tryIncremental) {
-
-    if(irk){
+    if (irk) {
       // incremental import is possible
-      await sql.query(pgClient, `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`)
+      await sql.query(
+        pgClient,
+        `CREATE TABLE IF NOT EXISTS "${spec.target.table}" (${tableBody})`
+      )
 
       let result
 
-      if(irlsl){
-        const dateLimit = DateTime.local().minus(Duration.fromISO(irlsl)).toISODate();
-        console.log(`[${spec.ns}] Using last sync limit "${irk.name}" >= '${dateLimit}' for import`)
-        result = await sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}" WHERE "${irk.name}" >= '${dateLimit}'`)
+      if (irlsl) {
+        const dateLimit = DateTime.local()
+          .minus(Duration.fromISO(irlsl))
+          .toISODate()
+        console.log(
+          `[${spec.ns}] Using last sync limit "${irk.name}" >= '${dateLimit}' for import`
+        )
+        result = await sql.query(
+          pgClient,
+          `SELECT MAX("${irk.name}") FROM "${spec.target.table}" WHERE "${irk.name}" >= '${dateLimit}'`
+        )
       } else {
-        result = await sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
+        result = await sql.query(
+          pgClient,
+          `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`
+        )
       }
 
       const lastReplicationKeyValue = result.rows[0].max
 
       const replicationKeyName = irk.source
       if (lastReplicationKeyValue) {
-        const cursor = spec.source.getCollection(mongoClient)
+        const cursor = spec.source
+          .getCollection(mongoClient)
           .find({ [replicationKeyName]: { $gt: lastReplicationKeyValue } })
 
         console.log(`[${spec.ns}] Importing new and updated documents...`)
@@ -63,13 +87,18 @@ async function importCollection (mongoClient, pgClient, spec, options) {
         return
       }
     } else {
-      console.log(`[${spec.ns}] Missing incremental_replication_key to make incremental import, doing full import...`)
+      console.log(
+        `[${spec.ns}] Missing incremental_replication_key to make incremental import, doing full import...`
+      )
     }
   }
 
   if (options.tableInit) {
     await sql.query(pgClient, `DROP TABLE IF EXISTS "${spec.target.table}"`)
-    await sql.query(pgClient, `CREATE TABLE "${spec.target.table}" (${tableBody})`)
+    await sql.query(
+      pgClient,
+      `CREATE TABLE "${spec.target.table}" (${tableBody})`
+    )
   } else {
     console.log(`[${spec.ns}] Bypassing drop & create table...`)
   }
@@ -79,9 +108,13 @@ async function importCollection (mongoClient, pgClient, spec, options) {
   const query = {}
   if (irk && irl) {
     if (!irk.type.includes('timestamp')) {
-      console.log(`[${spec.ns}] Replication limit does not support keys of types other than TIMESTAMP`)
+      console.log(
+        `[${spec.ns}] Replication limit does not support keys of types other than TIMESTAMP`
+      )
     } else {
-      const dateLimit = DateTime.local().minus(Duration.fromISO(irl)).toJSDate()
+      const dateLimit = DateTime.local()
+        .minus(Duration.fromISO(irl))
+        .toJSDate()
       query[irk.source] = {
         $gte: dateLimit
       }
@@ -91,7 +124,8 @@ async function importCollection (mongoClient, pgClient, spec, options) {
     console.log(`[${spec.ns}] Importing all documents...`)
   }
 
-  const cursor = spec.source.getCollection(mongoClient)
+  const cursor = spec.source
+    .getCollection(mongoClient)
     .find(query, { projection: spec.source.projection })
 
   await importDocs(spec, cursor, pgClient, fullImport, options)
@@ -101,7 +135,10 @@ async function importCollection (mongoClient, pgClient, spec, options) {
 
     const queries = spec.target.tableInit
     for (let i = 0; i < queries.length; i++) {
-      console.log(`[${spec.ns}] [${i + 1}/${queries.length}] executing:`, queries[i])
+      console.log(
+        `[${spec.ns}] [${i + 1}/${queries.length}] executing:`,
+        queries[i]
+      )
       const result = await sql.query(pgClient, queries[i])
       debug(`[${spec.ns}] [${i + 1}/${queries.length}] result:`, result)
     }
@@ -114,7 +151,7 @@ async function importCollection (mongoClient, pgClient, spec, options) {
  * @param {MongoDB.cursor} cursor ** a mongodb cursor
  * @param {Function} importFn ** the function used to import
  */
-async function importDocs (spec, cursor, pgClient, importFn, options) {
+async function importDocs(spec, cursor, pgClient, importFn, options) {
   let docs = []
   let acc = 0
   let more = await cursor.hasNext()
@@ -134,12 +171,15 @@ async function importDocs (spec, cursor, pgClient, importFn, options) {
   }
 }
 
-async function fullImport (spec, docs, pgClient, options) {
+async function fullImport(spec, docs, pgClient, options) {
   try {
     const importResult = await copyBatch(spec, docs, pgClient)
     return importResult
   } catch (error) {
-    console.log(`[${spec.ns}] Bulk insert error, attempting individual inserts...`, error)
+    console.log(
+      `[${spec.ns}] Bulk insert error, attempting individual inserts...`,
+      error
+    )
 
     const tableName = spec.target.table
     const columns = schema.getColumnNames(spec)
@@ -155,7 +195,11 @@ async function fullImport (spec, docs, pgClient, options) {
           values: Array.from(schema.transformValues(spec, doc))
         })
       } catch (error) {
-        if (error.name === 'PgError' && error.innerError && error.innerError.code === '23505') {
+        if (
+          error.name === 'PgError' &&
+          error.innerError &&
+          error.innerError.code === '23505'
+        ) {
           /**
            * PK violations during import can occur when a document is updated AFTER it's been
            * emitted by an open MongoDB cursor. It's sometimes emitted again, which results
@@ -164,7 +208,9 @@ async function fullImport (spec, docs, pgClient, options) {
            * So, as a workaround, we ignore PK violations during the individual import phase.
            * The updates on the document will be picked up later in the oplog.
            */
-          console.log(`[${spec.ns}] Ignored PK violation: ${error.innerError.detail}`)
+          console.log(
+            `[${spec.ns}] Ignored PK violation: ${error.innerError.detail}`
+          )
         } else {
           const err = new Error('Individual insertion of documents failed')
           const docId = doc._id.toString()
@@ -185,14 +231,17 @@ async function fullImport (spec, docs, pgClient, options) {
   }
 }
 
-async function incrementalImport (spec, docs, pgClient, options) {
+async function incrementalImport(spec, docs, pgClient, options) {
   const tableName = spec.target.table
   const tempTableName = `${tableName}_copy_temp`
   const body = schema.getTableBody(spec)
   const columns = schema.getColumnNames(spec)
 
   try {
-    await sql.query(pgClient, `CREATE TEMPORARY TABLE "${tempTableName}" (${body})`)
+    await sql.query(
+      pgClient,
+      `CREATE TEMPORARY TABLE "${tempTableName}" (${body})`
+    )
 
     await copyBatch(spec, docs, pgClient, tempTableName)
 
@@ -221,7 +270,10 @@ async function incrementalImport (spec, docs, pgClient, options) {
     console.log(`[${spec.ns}] Updated ${updateResult.rowCount} rows...`)
     return updateResult
   } catch (err) {
-    console.warn(`[${spec.ns}] Bulk insert error, attempting individual inserts...`, err)
+    console.warn(
+      `[${spec.ns}] Bulk insert error, attempting individual inserts...`,
+      err
+    )
 
     await sql.query(pgClient, 'BEGIN')
     for (const doc of docs) {

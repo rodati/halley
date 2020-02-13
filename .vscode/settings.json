@@ -1,19 +1,30 @@
 {
-    "editor.tabSize": 2,
-    "editor.insertSpaces": true,
-    "standard.enable": true,
-    "standard.autoFixOnSave": true,
-    "cSpell.words": [
-        "bigint",
-        "lockify",
-        "oplog",
-        "postgre",
-        "postgres",
-        "promisified",
-        "promisify",
-        "replicable",
-        "smallint",
-        "upsert",
-        "upserts"
-    ]
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+
+  // Disable standard
+  "standard.enable": false,
+
+  // Enable eslint
+  "eslint.enable": true,
+
+  // Disable editor lint, use eslint
+  "javascript.validate.enable": false,
+
+  // Enable prettier
+  "editor.formatOnSave": true,
+
+  "cSpell.words": [
+    "bigint",
+    "lockify",
+    "oplog",
+    "postgre",
+    "postgres",
+    "promisified",
+    "promisify",
+    "replicable",
+    "smallint",
+    "upsert",
+    "upserts"
+  ]
 }

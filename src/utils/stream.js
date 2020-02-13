@@ -3,27 +3,25 @@
 /**
  * @param {NodeJS.ReadableStream} stream
  */
-function endOfStream (stream) {
-  return new Promise(function (resolve, reject) {
-    function endHandler () {
+function endOfStream(stream) {
+  return new Promise(function(resolve, reject) {
+    function endHandler() {
       cleanup()
       resolve()
     }
 
-    function errorHandler (error) {
+    function errorHandler(error) {
       cleanup()
       reject(error)
     }
 
-    function cleanup () {
+    function cleanup() {
       stream
         .removeListener('end', endHandler)
         .removeListener('error', errorHandler)
     }
 
-    stream
-      .on('end', endHandler)
-      .on('error', errorHandler)
+    stream.on('end', endHandler).on('error', errorHandler)
   })
 }
 

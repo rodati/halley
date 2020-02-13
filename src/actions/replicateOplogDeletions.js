@@ -11,7 +11,7 @@ const Oplog = require('../utils/Oplog')
 const Schema = require('../utils/Schema')
 const { DateTime, Duration } = require('luxon')
 
-async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) {
+async function replicateOplogDeletions(rawSpecs, pgPool, localDb, concurrency) {
   console.log('[oplog] Searching for last sync date ...')
   const pgClient = await pgPool.connect()
   const specs = values(rawSpecs)
@@ -21,17 +21,27 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
     // specs without a IRK will get fully imported anyway, skip them.
     const irk = spec.keys.incrementalReplicationKey
     const irlsl = spec.keys.incrementalReplicationLastSyncLimit
-    
+
     if (irk) {
       let max
-      if(irlsl){
-        const dateLimit = DateTime.local().minus(Duration.fromISO(irlsl)).toISODate();
-        console.log(`[oplog] Using last sync limit "${irk.name}" >= '${dateLimit}' for delete operations`)
-        max = sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}" WHERE "${irk.name}" >= '${dateLimit}'`)
+      if (irlsl) {
+        const dateLimit = DateTime.local()
+          .minus(Duration.fromISO(irlsl))
+          .toISODate()
+        console.log(
+          `[oplog] Using last sync limit "${irk.name}" >= '${dateLimit}' for delete operations`
+        )
+        max = sql.query(
+          pgClient,
+          `SELECT MAX("${irk.name}") FROM "${spec.target.table}" WHERE "${irk.name}" >= '${dateLimit}'`
+        )
       } else {
-        max = sql.query(pgClient, `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`)
+        max = sql.query(
+          pgClient,
+          `SELECT MAX("${irk.name}") FROM "${spec.target.table}"`
+        )
       }
-      
+
       replicableSpecs.push(spec.ns)
       selectMax.push(max)
     }
@@ -40,8 +50,8 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
   // TODO save this results in each spec so that this query can be avoided in incremental import
   const maxArray = await Bluebird.all(selectMax)
   const lastReplicationKeyValue = maxArray
-    .map(result => result.rows[0].max)
-    .filter(item => item)
+    .map((result) => result.rows[0].max)
+    .filter((item) => item)
     .sort((a, b) => a.getTime() > b.getTime())
     .pop()
 
@@ -54,7 +64,9 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
     return
   }
 
-  console.log(`[oplog] searching oplog for delete operations since ${lastReplicationKeyValue}...`)
+  console.log(
+    `[oplog] searching oplog for delete operations since ${lastReplicationKeyValue}...`
+  )
 
   const docsCursor = await oplog.getNewOps(lastReplicationKeyValue)
 
@@ -75,11 +87,15 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
       // the delete operation belongs to a foreign spec or to a spec without an IRK
       continue
     }
-    const collection = collections.find((collection) => collection.spec.ns === namespace)
+    const collection = collections.find(
+      (collection) => collection.spec.ns === namespace
+    )
     if (collection) {
       collection.values.push(doc.o._id)
       if (collection.values.length === 1000) {
-        console.log(`[${namespace}] Reached batch size. Processing batch before continuing`)
+        console.log(
+          `[${namespace}] Reached batch size. Processing batch before continuing`
+        )
         await deleteBatch(pgPool, collection)
         delete collection.values
       }
@@ -91,16 +107,22 @@ async function replicateOplogDeletions (rawSpecs, pgPool, localDb, concurrency) 
     }
   }
 
-  console.log('[oplog] Finished iterating oplog operations. Deleting batches in parallel...')
+  console.log(
+    '[oplog] Finished iterating oplog operations. Deleting batches in parallel...'
+  )
 
-  await Bluebird.map(collections, deleteBatch.bind(null, pgPool), { concurrency })
+  await Bluebird.map(collections, deleteBatch.bind(null, pgPool), {
+    concurrency
+  })
 }
 
-async function deleteBatch (pgPool, collection) {
+async function deleteBatch(pgPool, collection) {
   const { spec, values } = collection
 
   if (!spec.keys.deleteKey) {
-    console.warn(`[${spec.ns}] Skipping delete operations batch because of lack of delete key. See: https://github.com/rodati/halley/issues/7`)
+    console.warn(
+      `[${spec.ns}] Skipping delete operations batch because of lack of delete key. See: https://github.com/rodati/halley/issues/7`
+    )
     return false
   }
 
@@ -109,15 +131,18 @@ async function deleteBatch (pgPool, collection) {
   const tempTableName = `${tableName}_del_temp`
 
   const pgClient = await pgPool.connect()
-  await sql.query(pgClient, `CREATE TEMPORARY TABLE "${tempTableName}" ("${key}" TEXT, PRIMARY KEY ("${key}"))`)
+  await sql.query(
+    pgClient,
+    `CREATE TEMPORARY TABLE "${tempTableName}" ("${key}" TEXT, PRIMARY KEY ("${key}"))`
+  )
 
-  const targetStream = pgClient.query(copyFrom(
-    `COPY "${tempTableName}" ("${key}") FROM STDIN`
-  ))
+  const targetStream = pgClient.query(
+    copyFrom(`COPY "${tempTableName}" ("${key}") FROM STDIN`)
+  )
 
-  const data = values.map(doc => Schema.escapeText(doc.toString()))
+  const data = values.map((doc) => Schema.escapeText(doc.toString()))
   const sourceStream = new Readable()
-  sourceStream._read = function noop () {}
+  sourceStream._read = function noop() {}
   sourceStream.pipe(targetStream)
   sourceStream.push(data.join('\n'))
   sourceStream.destroy()

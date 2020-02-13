@@ -3,7 +3,7 @@
 const sql = require('../interfaces/sql')
 const lockUtil = require('../utils/lock')
 
-async function deleteInner (spec, pgPool, doc) {
+async function deleteInner(spec, pgPool, doc) {
   const { table } = spec.target
   const { _id } = doc
 
@@ -17,16 +17,22 @@ async function deleteInner (spec, pgPool, doc) {
     })
 
     if (deleteResult.rowCount === 0) {
-      console.warn(`[${spec.ns}] Huh? document with id: ${_id} was deleted in mongo, but was not found in postgres db`)
+      console.warn(
+        `[${spec.ns}] Huh? document with id: ${_id} was deleted in mongo, but was not found in postgres db`
+      )
     }
   } finally {
     pgClient.release()
   }
 }
 
-function getDeleteForConcurrency (concurrency) {
+function getDeleteForConcurrency(concurrency) {
   return concurrency > 1
-    ? lockUtil.lockify(deleteInner, lockUtil.getPromisifiedLock(), spec => spec.ns)
+    ? lockUtil.lockify(
+        deleteInner,
+        lockUtil.getPromisifiedLock(),
+        (spec) => spec.ns
+      )
     : deleteInner
 }
 

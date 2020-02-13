@@ -50,7 +50,8 @@ const argv = require('yargs')
   })
 
   .option('db-name', {
-    describe: 'Database name. Use with db-mode single. If not set, it defaults to the database specified in the Mongo connection string.',
+    describe:
+      'Database name. Use with db-mode single. If not set, it defaults to the database specified in the Mongo connection string.',
     string: true
   })
 
@@ -67,8 +68,6 @@ const argv = require('yargs')
   })
 
   .help('h')
-  .alias('help', 'h')
-
-  .argv
+  .alias('help', 'h').argv
 
 require('./src/main')(argv)
