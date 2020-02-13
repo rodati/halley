@@ -7,7 +7,7 @@
  * @param {Array<String>} keys: an array of keys to omit from the new object
  * @returns {Object} new object with same properties as originalObject
  */
-function omit (originalObject, keys) {
+function omit(originalObject, keys) {
   // code based on babel's _objectWithoutProperties
   const newObject = {}
   for (const key in originalObject) {

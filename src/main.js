@@ -16,7 +16,7 @@ const { getDeleteForConcurrency } = require('./actions/deleteSingle')
 let del
 let upsert
 
-module.exports = async function main (options) {
+module.exports = async function main(options) {
   upsert = getUpsertForConcurrency(options.concurrency)
   del = getDeleteForConcurrency(options.concurrency)
 
@@ -39,13 +39,14 @@ module.exports = async function main (options) {
   const oplogUtil = new OplogUtil(localDb)
 
   // find the last timestamp. If there isn't one found, get one from the local clock
-  const tailFrom = await oplogUtil.getLastTimestamp() || getLocalTimestamp()
+  const tailFrom = (await oplogUtil.getLastTimestamp()) || getLocalTimestamp()
 
   console.log('Connections established successfully...')
 
-  const rootDatabase = options.dbMode === 'single'
-    ? options.dbName || mongoClient.db().databaseName
-    : null
+  const rootDatabase =
+    options.dbMode === 'single'
+      ? options.dbName || mongoClient.db().databaseName
+      : null
 
   const specs = await Specs.loadFromFile(options.collections, {
     rootDatabase
@@ -59,13 +60,18 @@ module.exports = async function main (options) {
   }
 
   // import
-  await importCollections(mongoClient, pgPool, values(specs), options.incrementalImport)
+  await importCollections(
+    mongoClient,
+    pgPool,
+    values(specs),
+    options.incrementalImport
+  )
 
   const oplog = oplogUtil.observableTail({
     fromTimestamp: tailFrom
   })
 
-  async function syncObject (spec, selector) {
+  async function syncObject(spec, selector) {
     const obj = await spec.source
       .getCollection(mongoClient)
       .findOne(selector, { projection: spec.source.projection })
@@ -77,7 +83,7 @@ module.exports = async function main (options) {
     }
   }
 
-  async function handleOp (op) {
+  async function handleOp(op) {
     debug('processing op', op)
 
     if (op.op === 'n') {
@@ -122,7 +128,7 @@ module.exports = async function main (options) {
       case 'u': {
         const { o2: selector, o: update } = op
 
-        if (Object.keys(update).some(k => k.startsWith('$'))) {
+        if (Object.keys(update).some((k) => k.startsWith('$'))) {
           debug(`re sync ${ns}: ${selector._id}`, update)
           await syncObject(spec, selector)
         } else {
@@ -156,7 +162,10 @@ module.exports = async function main (options) {
             break
 
           default:
-            console.warn(`Unknown delete mode "${options.deleteMode}" on ${ns}`, op.o.toString())
+            console.warn(
+              `Unknown delete mode "${options.deleteMode}" on ${ns}`,
+              op.o.toString()
+            )
             break
         }
         break
@@ -166,8 +175,8 @@ module.exports = async function main (options) {
     }
   }
 
-  function handleOpWrapper (op) {
-    return handleOp(op).catch(innerErr => {
+  function handleOpWrapper(op) {
+    return handleOp(op).catch((innerErr) => {
       const error = new Error(`Could not process op: ${JSON.stringify(op)}`)
       error.innerError = innerErr
       throw error
@@ -175,24 +184,21 @@ module.exports = async function main (options) {
   }
 
   console.log('Tailing oplog...')
-  oplog.subscribe(
-    handleOpWrapper,
-    function onError (err) {
-      throw err
-    }
-  )
+  oplog.subscribe(handleOpWrapper, function onError(err) {
+    throw err
+  })
 }
 
-function getLocalTimestamp () {
+function getLocalTimestamp() {
   return new Timestamp(0, Math.floor(new Date().getTime() / 1000))
 }
 
-process.on('unhandledRejection', err => {
+process.on('unhandledRejection', (err) => {
   console.error(err)
   process.exit(1)
 })
 
-process.on('uncaughtException', err => {
+process.on('uncaughtException', (err) => {
   console.error(err)
   process.exit(1)
 })

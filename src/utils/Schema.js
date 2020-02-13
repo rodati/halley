@@ -4,10 +4,10 @@ const get = require('lodash/get')
 const { ObjectId, Decimal128 } = require('mongodb')
 const omit = require('./omit')
 
-function getColumnNames (spec) {
+function getColumnNames(spec) {
   const { columns, extraProps } = spec.target
 
-  const names = columns.map(c => `"${c.name}"`)
+  const names = columns.map((c) => `"${c.name}"`)
   if (extraProps) {
     names.push('_extra_props')
   }
@@ -15,7 +15,7 @@ function getColumnNames (spec) {
   return names
 }
 
-function getPlaceholders (spec) {
+function getPlaceholders(spec) {
   const { columns, extraProps } = spec.target
 
   const placeholders = columns.map((c, i) => `$${i + 1}`)
@@ -26,19 +26,19 @@ function getPlaceholders (spec) {
   return placeholders
 }
 
-function getTableBody (spec) {
-  const tableBody = spec.target.columns.map(c => `"${c.name}" ${c.type}`)
+function getTableBody(spec) {
+  const tableBody = spec.target.columns.map((c) => `"${c.name}" ${c.type}`)
   if (spec.target.extraProps) {
     tableBody.push(`_extra_props ${spec.target.extraProps.type}`)
   }
   tableBody.push(
-    `PRIMARY KEY (${spec.keys.primaryKey.map(k => `"${k.name}"`).join(',')})`
+    `PRIMARY KEY (${spec.keys.primaryKey.map((k) => `"${k.name}"`).join(',')})`
   )
 
   return tableBody.join(',')
 }
 
-function * transformValues (spec, doc) {
+function* transformValues(spec, doc) {
   const { columns, extraProps } = spec.target
 
   for (const column of columns) {
@@ -62,7 +62,11 @@ function * transformValues (spec, doc) {
         value = null
         break
       case 'number':
-        if (column.type === 'smallint' || column.type === 'integer' || column.type === 'bigint') {
+        if (
+          column.type === 'smallint' ||
+          column.type === 'integer' ||
+          column.type === 'bigint'
+        ) {
           value = Math.trunc(source)
         } else {
           value = source
@@ -84,7 +88,7 @@ function * transformValues (spec, doc) {
   }
 }
 
-function transformObjectValue (key, jsonValue) {
+function transformObjectValue(key, jsonValue) {
   if (this[key] instanceof ObjectId) {
     return {
       // jsonValue should be a string equivalent to this[key].toHexString()
@@ -101,16 +105,16 @@ function transformObjectValue (key, jsonValue) {
  * See: https://stackoverflow.com/a/31672314
  * @param {string} str String to sanitize
  */
-function sanitizeString (str) {
+function sanitizeString(str) {
   // eslint-disable-next-line no-control-regex
   return str.replace(/\u0000/g, ' ')
 }
 
-function escapeText (str) {
+function escapeText(str) {
   return str.replace(/[\\\n\r\t]/g, '\\$&')
 }
 
-function toTextFormat (spec, doc) {
+function toTextFormat(spec, doc) {
   const parts = []
 
   for (const value of transformValues(spec, doc)) {

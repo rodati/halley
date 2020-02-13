@@ -4,7 +4,7 @@ const schema = require('../utils/Schema')
 const sql = require('../interfaces/sql')
 const lockUtil = require('../utils/lock')
 
-async function upsert (spec, pgClient, doc) {
+async function upsert(spec, pgClient, doc) {
   const { table, columns } = spec.target
 
   const columnNames = schema.getColumnNames(spec)
@@ -48,7 +48,11 @@ async function upsert (spec, pgClient, doc) {
     })
 
     if (result.rowCount > 1) {
-      console.warn(`Huh? Updated ${result.rowCount} > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`)
+      console.warn(
+        `Huh? Updated ${
+          result.rowCount
+        } > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`
+      )
     }
   } catch (error) {
     await sql.query(pgClient, 'ROLLBACK')
@@ -56,7 +60,7 @@ async function upsert (spec, pgClient, doc) {
   }
 }
 
-async function lockeableUpsert (spec, pgPool, doc) {
+async function lockeableUpsert(spec, pgPool, doc) {
   const pgClient = await pgPool.connect()
   try {
     await upsert(spec, pgClient, doc)
@@ -65,10 +69,14 @@ async function lockeableUpsert (spec, pgPool, doc) {
   }
 }
 
-function getUpsertForConcurrency (concurrency) {
+function getUpsertForConcurrency(concurrency) {
   return concurrency > 1
-    // lock upsert by ns to avoid concurrent upserts on the same collection
-    ? lockUtil.lockify(lockeableUpsert, lockUtil.getPromisifiedLock(), spec => spec.ns)
+    ? // lock upsert by ns to avoid concurrent upserts on the same collection
+      lockUtil.lockify(
+        lockeableUpsert,
+        lockUtil.getPromisifiedLock(),
+        (spec) => spec.ns
+      )
     : upsert
 }
 

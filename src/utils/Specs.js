@@ -9,9 +9,7 @@ const sql = require('../interfaces/sql')
 
 const readFileAsync = promisify(fs.readFile)
 
-async function loadFromFile (filename, {
-  rootDatabase = null
-} = {}) {
+async function loadFromFile(filename, { rootDatabase = null } = {}) {
   const config = yaml.safeLoad(await readFileAsync(filename, 'utf8'))
 
   const specByNs = {}
@@ -29,16 +27,20 @@ async function loadFromFile (filename, {
   return specByNs
 }
 
-function reduceCollectionsSpec (memo, collectionsSpec, databaseName) {
+function reduceCollectionsSpec(memo, collectionsSpec, databaseName) {
   for (const collection in collectionsSpec) {
     if (Object.prototype.hasOwnProperty.call(collectionsSpec, collection)) {
-      memo[`${databaseName}.${collection}`] = getCollectionSpec(collectionsSpec[collection], collection, databaseName)
+      memo[`${databaseName}.${collection}`] = getCollectionSpec(
+        collectionsSpec[collection],
+        collection,
+        databaseName
+      )
     }
   }
 }
 
-function getCollectionSpec (tableSpec, collectionName, databaseName) {
-  const columns = tableSpec[':columns'].map(columnSpec => {
+function getCollectionSpec(tableSpec, collectionName, databaseName) {
+  const columns = tableSpec[':columns'].map((columnSpec) => {
     const [name] = Object.keys(columnSpec)
     return {
       name,
@@ -50,16 +52,16 @@ function getCollectionSpec (tableSpec, collectionName, databaseName) {
 
   const meta = tableSpec[':meta'] || {}
 
-  const findColumnByName = name => {
-    const column = columns.find(c => c.name === name)
+  const findColumnByName = (name) => {
+    const column = columns.find((c) => c.name === name)
     if (!column) {
       throw new Error(`Could not find column ${name}`)
     }
     return column
   }
 
-  const findColumnBySource = source => {
-    const column = columns.find(c => c.source === source)
+  const findColumnBySource = (source) => {
+    const column = columns.find((c) => c.source === source)
     if (!column) {
       throw new Error(`Could not find column with source ${source}`)
     }
@@ -88,9 +90,9 @@ function getCollectionSpec (tableSpec, collectionName, databaseName) {
   const projection = extraProps
     ? null
     : columns.reduce((memo, column) => {
-      memo[column.source] = 1
-      return memo
-    }, {})
+        memo[column.source] = 1
+        return memo
+      }, {})
 
   return {
     ns: `${databaseName}.${collectionName}`,
@@ -109,35 +111,37 @@ function getCollectionSpec (tableSpec, collectionName, databaseName) {
     },
     keys: {
       primaryKey,
-      incrementalReplicationLastSyncLimit: meta[':incremental_replication_last_sync_limit'],
+      incrementalReplicationLastSyncLimit:
+        meta[':incremental_replication_last_sync_limit'],
       incrementalReplicationKey: meta[':incremental_replication_key']
         ? findColumnByName(meta[':incremental_replication_key'])
         : null,
-      incrementalReplicationDirection: meta[':incremental_replication_direction'] === 'high_to_low'
-        ? -1
-        : 1,
+      incrementalReplicationDirection:
+        meta[':incremental_replication_direction'] === 'high_to_low' ? -1 : 1,
       incrementalReplicationLimit: meta[':incremental_replication_limit'],
       deleteKey
     }
   }
 }
 
-function getExtraPropsSpec (extraPropsSpec, columnsSpec) {
+function getExtraPropsSpec(extraPropsSpec, columnsSpec) {
   if (!extraPropsSpec) {
     return null
   }
 
   let type = (extraPropsSpec[':type'] || extraPropsSpec).toLowerCase()
   if (type !== 'json' && type !== 'jsonb' && type !== 'text') {
-    console.warn(`Unsupported extra props type "${type}" -- using default type "text"`)
+    console.warn(
+      `Unsupported extra props type "${type}" -- using default type "text"`
+    )
     type = 'text'
   }
 
   const fieldsToOmit = [
     // omit field if it's not to be retained and it's not a deep path, since we can't omit deep fields
     ...columnsSpec
-      .filter(c => !c.retainExtraProp && !c.source.includes('.'))
-      .map(c => c.source),
+      .filter((c) => !c.retainExtraProp && !c.source.includes('.'))
+      .map((c) => c.source),
 
     // omit other specified fields
     ...(extraPropsSpec[':omit'] || [])
@@ -150,11 +154,11 @@ function getExtraPropsSpec (extraPropsSpec, columnsSpec) {
 }
 
 class CollectionSpecSource {
-  constructor (data) {
+  constructor(data) {
     Object.assign(this, data)
   }
 
-  getCollection (mongoClient) {
+  getCollection(mongoClient) {
     return mongoClient.db(this.databaseName).collection(this.collectionName)
   }
 }
