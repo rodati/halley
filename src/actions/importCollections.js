@@ -202,58 +202,69 @@ async function incrementalImport(spec, docs, pgClient, options) {
   const body = schema.getTableBody(spec)
   const columns = schema.getColumnNames(spec)
 
-  try {
-    await sql.query(pgClient, `CREATE TEMPORARY TABLE "${tempTableName}" (${body})`)
+  if (options.copyBatch) {
+    try {
+      await sql.query(pgClient, `CREATE TEMPORARY TABLE "${tempTableName}" (${body})`)
 
-    await copyBatch(spec, docs, pgClient, tempTableName)
+      await copyBatch(spec, docs, pgClient, tempTableName)
 
-    const deleteClauses = []
-    for (const key of spec.keys.primaryKey) {
-      const clause = `"${tableName}"."${key.name}" = "${tempTableName}"."${key.name}"`
-      deleteClauses.push(clause)
-    }
+      const deleteClauses = []
+      for (const key of spec.keys.primaryKey) {
+        const clause = `"${tableName}"."${key.name}" = "${tempTableName}"."${key.name}"`
+        deleteClauses.push(clause)
+      }
 
-    await sql.query(pgClient, {
-      name: `import-delete-${spec.ns}`,
-      text: `DELETE FROM "${tableName}"
+      await sql.query(pgClient, {
+        name: `import-delete-${spec.ns}`,
+        text: `DELETE FROM "${tableName}"
               USING "${tempTableName}"
               WHERE ${deleteClauses.join(' AND ')}`
-    })
+      })
 
-    const updateResult = await sql.query(pgClient, {
-      name: `import-upsert-${spec.ns}`,
-      text: `INSERT INTO "${tableName}" (${columns.join(',')})
+      const updateResult = await sql.query(pgClient, {
+        name: `import-upsert-${spec.ns}`,
+        text: `INSERT INTO "${tableName}" (${columns.join(',')})
               SELECT ${columns.join(',')}
               FROM "${tempTableName}"`
-    })
+      })
 
-    await sql.query(pgClient, `DROP TABLE "${tempTableName}"`)
+      await sql.query(pgClient, `DROP TABLE "${tempTableName}"`)
 
-    console.log(`[${spec.ns}] Updated ${updateResult.rowCount} rows...`)
-    return updateResult
-  } catch (err) {
-    console.warn(`[${spec.ns}] Bulk insert error, attempting individual inserts...`, err)
+      console.log(`[${spec.ns}] Updated ${updateResult.rowCount} rows...`)
+      return updateResult
+    } catch (err) {
+      console.warn(`[${spec.ns}] Bulk insert error, attempting individual inserts...`, err)
 
-    await sql.query(pgClient, 'BEGIN')
-    for (const doc of docs) {
-      try {
-        await upsert(spec, pgClient, doc)
-      } catch (error) {
-        const err = new Error('Individual insertion of docs failed')
-        err.innerError = error
-        const docId = doc._id.toString()
-        err.extraData = {
-          spec,
-          docId
-        }
-        if (options.exitOnError) {
-          throw err
-        } else {
-          console.log(err)
-        }
+      await incrementalImportUpsert(spec, docs, pgClient, options)
+    }
+  } else {
+    console.log(`[${spec.ns}] Skipping batch copy, sync documents one by one`)
+    await incrementalImportUpsert(spec, docs, pgClient, options)
+  }
+}
+
+async function incrementalImportUpsert(spec, docs, pgClient, options) {
+  await sql.query(pgClient, 'BEGIN')
+
+  for (const doc of docs) {
+    try {
+      console.log(`[${spec.ns}] Upserting document...`)
+      await upsert(spec, pgClient, doc)
+    } catch (error) {
+      const err = new Error('Individual insertion of docs failed')
+      err.innerError = error
+      const docId = doc._id.toString()
+      err.extraData = {
+        spec,
+        docId
+      }
+      if (options.exitOnError) {
+        throw err
+      } else {
+        console.log(err)
       }
     }
-
-    await sql.query(pgClient, 'COMMIT')
   }
+
+  await sql.query(pgClient, 'COMMIT')
 }

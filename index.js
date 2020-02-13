@@ -55,6 +55,12 @@ const argv = require('yargs')
     string: true
   })
 
+  .option('copy-batch', {
+    describe: 'If is false, will try to sync documents one by one instead of batch',
+    boolean: true,
+    default: true
+  })
+
   .option('exit-on-error', {
     describe: 'If should stop the process on any error doing a full/incremental import',
     boolean: true,
