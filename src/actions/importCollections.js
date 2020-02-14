@@ -248,7 +248,7 @@ async function incrementalImportUpsert(spec, docs, pgClient, options) {
 
   for (const doc of docs) {
     try {
-      console.log(`[${spec.ns}] Upserting document...`)
+      // console.log(`[${spec.ns}] Upserting document...`)
       await upsert(spec, pgClient, doc)
     } catch (error) {
       const err = new Error('Individual insertion of docs failed')
