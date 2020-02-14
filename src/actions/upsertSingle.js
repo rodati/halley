@@ -48,6 +48,8 @@ async function upsert(spec, pgClient, doc) {
         values
       })
     } catch (error) {
+      await sql.query(pgClient, 'ROLLBACK')
+
       // If the insert fails for unique_violation, try the update
       // https://www.postgresql.org/docs/9.2/errcodes-appendix.html
       if (error.name === 'PgError' && error.innerError && error.innerError.code === '23505') {
