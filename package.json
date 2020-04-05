@@ -23,13 +23,13 @@
     "js-yaml": "^3.13.1",
     "lock": "^1.1.0",
     "lodash": "^4.17.15",
-    "luxon": "^1.17.2",
-    "mongodb": "^3.4.0",
+    "luxon": "^1.23.0",
+    "mongodb": "^3.5.5",
     "pg": "^7.15.1",
     "pg-copy-streams": "^2.2.2",
-    "rxjs": "^6.5.3",
-    "rxjs-stream": "^3.1.0",
-    "yargs": "^15.0.2"
+    "rxjs": "^6.5.5",
+    "rxjs-stream": "^3.2.1",
+    "yargs": "^15.3.1"
   },
   "devDependencies": {
     "eslint": "^6.8.0"
