@@ -75,6 +75,7 @@ async function upsert(spec, pgClient, doc) {
       }
     }
   } else {
+    console.log('DEBUG: Start to update doc')
     try {
       // use prepared statements so that pg can cache them
       const result = await sql.query(pgClient, {
@@ -92,6 +93,7 @@ async function upsert(spec, pgClient, doc) {
         console.warn(`Huh? Updated ${result.rowCount} > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`)
       }
     } catch (error) {
+      console.log('DEBUG: Error updating doc', error)
       await sql.query(pgClient, 'ROLLBACK')
       throw error
     }

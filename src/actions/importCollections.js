@@ -248,6 +248,7 @@ async function incrementalImportUpsert(spec, docs, pgClient, options) {
       // console.log(`[${spec.ns}] Upserting document...`)
       await upsert(spec, pgClient, doc)
     } catch (error) {
+      console.log('DEBUG: Error in start incrementalImportUpsert', error)
       const err = new Error('Individual insertion of docs failed')
       err.innerError = error
       const docId = doc._id.toString()
@@ -258,7 +259,7 @@ async function incrementalImportUpsert(spec, docs, pgClient, options) {
       if (options.exitOnError) {
         throw err
       } else {
-        console.log(err)
+        console.log('DEBUG: Error in end incrementalImportUpsert', err)
       }
     }
   }
