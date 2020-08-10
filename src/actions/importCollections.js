@@ -47,9 +47,7 @@ async function importCollection(mongoClient, pgClient, spec, options) {
         if (!irk.type.includes('timestamp')) {
           console.log(`[${spec.ns}] Replication limit does not support keys of types other than TIMESTAMP`)
         } else {
-          lastReplicationKeyValue = DateTime.local()
-            .minus(Duration.fromISO(irl))
-            .toJSDate()
+          lastReplicationKeyValue = DateTime.local().minus(Duration.fromISO(irl)).toJSDate()
 
           console.log(`[${spec.ns}] Updating & importing all documents from ${lastReplicationKeyValue}...`)
         }
@@ -91,11 +89,9 @@ async function importCollection(mongoClient, pgClient, spec, options) {
     if (!irk.type.includes('timestamp')) {
       console.log(`[${spec.ns}] Replication limit does not support keys of types other than TIMESTAMP`)
     } else {
-      const dateLimit = DateTime.local()
-        .minus(Duration.fromISO(irl))
-        .toJSDate()
+      const dateLimit = DateTime.local().minus(Duration.fromISO(irl)).toJSDate()
       query[irk.source] = {
-        $gte: dateLimit
+        $gte: dateLimit,
       }
       console.log(`[${spec.ns}] Importing all documents from ${irl}...`)
     }
@@ -150,7 +146,7 @@ async function fullImport(spec, docs, pgClient, options) {
     const importResult = await copyBatch(spec, docs, pgClient)
     return importResult
   } catch (error) {
-    console.log(`[${spec.ns}] Bulk insert error, attempting individual inserts...`, error)
+    console.log(`[${spec.ns}] Bulk insert error in fullImport, attempting individual inserts...`, error)
 
     const tableName = spec.target.table
     const columns = schema.getColumnNames(spec)
@@ -163,7 +159,7 @@ async function fullImport(spec, docs, pgClient, options) {
           text: `INSERT INTO "${tableName}"
                   (${columns.join(',')})
                   VALUES (${placeholders.join(',')})`,
-          values: Array.from(schema.transformValues(spec, doc))
+          values: Array.from(schema.transformValues(spec, doc)),
         })
       } catch (error) {
         if (error.name === 'PgError' && error.innerError && error.innerError.code === '23505') {
@@ -183,7 +179,7 @@ async function fullImport(spec, docs, pgClient, options) {
           err.innerError = error
           err.extraData = {
             spec,
-            docId
+            docId,
           }
           if (options.exitOnError) {
             throw err
@@ -218,14 +214,14 @@ async function incrementalImport(spec, docs, pgClient, options) {
         name: `import-delete-${spec.ns}`,
         text: `DELETE FROM "${tableName}"
               USING "${tempTableName}"
-              WHERE ${deleteClauses.join(' AND ')}`
+              WHERE ${deleteClauses.join(' AND ')}`,
       })
 
       const updateResult = await sql.query(pgClient, {
         name: `import-upsert-${spec.ns}`,
         text: `INSERT INTO "${tableName}" (${columns.join(',')})
               SELECT ${columns.join(',')}
-              FROM "${tempTableName}"`
+              FROM "${tempTableName}"`,
       })
 
       await sql.query(pgClient, `DROP TABLE "${tempTableName}"`)
@@ -233,7 +229,7 @@ async function incrementalImport(spec, docs, pgClient, options) {
       console.log(`[${spec.ns}] Updated ${updateResult.rowCount} rows...`)
       return updateResult
     } catch (err) {
-      console.warn(`[${spec.ns}] Bulk insert error, attempting individual inserts...`, err)
+      console.warn(`[${spec.ns}] Bulk insert error in incrementalImport, attempting individual inserts...`, err)
 
       await incrementalImportUpsert(spec, docs, pgClient, options)
     }
@@ -256,7 +252,7 @@ async function incrementalImportUpsert(spec, docs, pgClient, options) {
       const docId = doc._id.toString()
       err.extraData = {
         spec,
-        docId
+        docId,
       }
       if (options.exitOnError) {
         throw err
