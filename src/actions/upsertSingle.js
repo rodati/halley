@@ -75,7 +75,6 @@ async function upsert(spec, pgClient, doc) {
       }
     }
   } else {
-    console.log('DEBUG: Start to update doc')
     try {
       // use prepared statements so that pg can cache them
       const result = await sql.query(pgClient, {
