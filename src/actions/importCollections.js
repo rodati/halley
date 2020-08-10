@@ -242,7 +242,7 @@ async function incrementalImport(spec, docs, pgClient, options) {
 async function incrementalImportUpsert(spec, docs, pgClient, options) {
   console.log('DEBUG: Start incrementalImportUpsert')
   await sql.query(pgClient, 'BEGIN')
-  console.log('DEBUG: Docs incrementalImportUpsert', docs)
+
   for (const doc of docs) {
     try {
       // console.log(`[${spec.ns}] Upserting document...`)
