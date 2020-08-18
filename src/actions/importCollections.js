@@ -264,5 +264,7 @@ async function incrementalImportUpsert(spec, docs, pgClient, options) {
     }
   }
 
+  console.log('DEBUG: Finish incrementalImportUpsert')
+
   await sql.query(pgClient, 'COMMIT')
 }
