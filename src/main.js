@@ -26,7 +26,7 @@ module.exports = async function main(options) {
   const mongoClient = await MongoClient.connect(options.mongo, {
     appname: 'halley',
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
   })
 
   // connect to pg
@@ -34,7 +34,7 @@ module.exports = async function main(options) {
     connectionString: options.sql,
     application_name: 'halley',
     min: 1,
-    max: Math.max(1, options.concurrency)
+    max: Math.max(1, options.concurrency),
   })
 
   const localDb = mongoClient.db('local')
@@ -48,7 +48,7 @@ module.exports = async function main(options) {
   const rootDatabase = options.dbMode === 'single' ? options.dbName || mongoClient.db().databaseName : null
 
   const specs = await Specs.loadFromFile(options.collections, {
-    rootDatabase
+    rootDatabase,
   })
 
   if (options.incrementalImport && options.deleteMode !== 'ignore') {
@@ -60,10 +60,6 @@ module.exports = async function main(options) {
 
   // import
   await importCollections(mongoClient, pgPool, values(specs), options)
-
-  const oplog = oplogUtil.observableTail({
-    fromTimestamp: tailFrom
-  })
 
   async function syncObject(spec, selector) {
     const obj = await spec.source.getCollection(mongoClient).findOne(selector, { projection: spec.source.projection })
@@ -177,6 +173,11 @@ module.exports = async function main(options) {
   }
 
   console.log('Tailing oplog...')
+
+  const oplog = oplogUtil.observableTail({
+    fromTimestamp: tailFrom,
+  })
+
   oplog.subscribe(handleOpWrapper, function onError(err) {
     throw err
   })
