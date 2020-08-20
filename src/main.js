@@ -167,7 +167,7 @@ module.exports = async function main(options) {
   })
 
   oplog.on('data', async function (op) {
-    op.pause()
+    oplog.pause()
 
     try {
       await handleOp(op)
@@ -180,7 +180,7 @@ module.exports = async function main(options) {
         console.log(error)
       }
     } finally {
-      op.resume()
+      oplog.resume()
     }
   })
 
