@@ -191,6 +191,15 @@ module.exports = async function main(options) {
       console.log(error)
     }
   })
+
+  oplog.on('close', function () {
+    const error = new Error(`Oplog closed!`)
+    if (options.exitOnError) {
+      throw error
+    } else {
+      console.log(error)
+    }
+  })
 }
 
 function getLocalTimestamp() {
