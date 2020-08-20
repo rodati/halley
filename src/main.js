@@ -160,8 +160,18 @@ module.exports = async function main(options) {
     }
   }
 
-  function handleOpWrapper(op) {
-    return handleOp(op).catch((innerErr) => {
+  console.log('Tailing oplog...')
+
+  const oplog = oplogUtil.observableTail({
+    fromTimestamp: tailFrom,
+  })
+
+  oplog.on('data', function (op) {
+    op.pause()
+
+    try {
+      handleOp(op)
+    } catch (innerErr) {
       const error = new Error(`Could not process op: ${JSON.stringify(op)}`)
       error.innerError = innerErr
       if (options.exitOnError) {
@@ -169,17 +179,17 @@ module.exports = async function main(options) {
       } else {
         console.log(error)
       }
-    })
-  }
-
-  console.log('Tailing oplog...')
-
-  const oplog = oplogUtil.observableTail({
-    fromTimestamp: tailFrom,
+    } finally {
+      op.resume()
+    }
   })
 
-  oplog.subscribe(handleOpWrapper, function onError(err) {
-    throw err
+  oplog.on('error', function (error) {
+    if (options.exitOnError) {
+      throw error
+    } else {
+      console.log(error)
+    }
   })
 }
 
