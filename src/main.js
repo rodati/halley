@@ -193,12 +193,7 @@ module.exports = async function main(options) {
   })
 
   oplog.on('close', function () {
-    const error = new Error(`Oplog closed!`)
-    if (options.exitOnError) {
-      throw error
-    } else {
-      console.log(error)
-    }
+    throw new Error(`Oplog stream closed!`)
   })
 }
 
