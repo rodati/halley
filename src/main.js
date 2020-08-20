@@ -166,11 +166,11 @@ module.exports = async function main(options) {
     fromTimestamp: tailFrom,
   })
 
-  oplog.on('data', function (op) {
+  oplog.on('data', async function (op) {
     op.pause()
 
     try {
-      handleOp(op)
+      await handleOp(op)
     } catch (innerErr) {
       const error = new Error(`Could not process op: ${JSON.stringify(op)}`)
       error.innerError = innerErr
