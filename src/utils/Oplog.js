@@ -22,12 +22,12 @@ module.exports = class OplogUtil {
     const cursor = this._oplog.find(
       {
         ts: {
-          $gt: fromTimestamp,
-        },
+          $gt: fromTimestamp
+        }
       },
       {
         tailable: true,
-        awaitData: true,
+        awaitData: true
       }
     )
 
@@ -36,7 +36,7 @@ module.exports = class OplogUtil {
 
   async getNewOps(lastSyncTimestamp) {
     const newDocsCursor = await this._oplog.find({
-      ts: { $gt: makeLocalTimestamp(lastSyncTimestamp) },
+      ts: { $gt: makeLocalTimestamp(lastSyncTimestamp) }
     })
 
     const more = await newDocsCursor.hasNext()
