@@ -91,7 +91,7 @@ async function importCollection(mongoClient, pgClient, spec, options) {
     } else {
       const dateLimit = DateTime.local().minus(Duration.fromISO(irl)).toJSDate()
       query[irk.source] = {
-        $gte: dateLimit,
+        $gte: dateLimit
       }
       console.log(`[${spec.ns}] Importing all documents from ${irl}...`)
     }
@@ -159,7 +159,7 @@ async function fullImport(spec, docs, pgClient, options) {
           text: `INSERT INTO "${tableName}"
                   (${columns.join(',')})
                   VALUES (${placeholders.join(',')})`,
-          values: Array.from(schema.transformValues(spec, doc)),
+          values: Array.from(schema.transformValues(spec, doc))
         })
       } catch (error) {
         if (error.name === 'PgError' && error.innerError && error.innerError.code === '23505') {
@@ -179,7 +179,7 @@ async function fullImport(spec, docs, pgClient, options) {
           err.innerError = error
           err.extraData = {
             spec,
-            docId,
+            docId
           }
           if (options.exitOnError) {
             throw err
@@ -214,14 +214,14 @@ async function incrementalImport(spec, docs, pgClient, options) {
         name: `import-delete-${spec.ns}`,
         text: `DELETE FROM "${tableName}"
               USING "${tempTableName}"
-              WHERE ${deleteClauses.join(' AND ')}`,
+              WHERE ${deleteClauses.join(' AND ')}`
       })
 
       const updateResult = await sql.query(pgClient, {
         name: `import-upsert-${spec.ns}`,
         text: `INSERT INTO "${tableName}" (${columns.join(',')})
               SELECT ${columns.join(',')}
-              FROM "${tempTableName}"`,
+              FROM "${tempTableName}"`
       })
 
       await sql.query(pgClient, `DROP TABLE "${tempTableName}"`)
@@ -240,7 +240,6 @@ async function incrementalImport(spec, docs, pgClient, options) {
 }
 
 async function incrementalImportUpsert(spec, docs, pgClient, options) {
-  console.log('DEBUG: Start incrementalImportUpsert')
   await sql.query(pgClient, 'BEGIN')
 
   for (const doc of docs) {
@@ -248,23 +247,20 @@ async function incrementalImportUpsert(spec, docs, pgClient, options) {
       // console.log(`[${spec.ns}] Upserting document...`)
       await upsert(spec, pgClient, doc)
     } catch (error) {
-      console.log('DEBUG: Error in start incrementalImportUpsert', error)
       const err = new Error('Individual insertion of docs failed')
       err.innerError = error
       const docId = doc._id.toString()
       err.extraData = {
         spec,
-        docId,
+        docId
       }
       if (options.exitOnError) {
         throw err
       } else {
-        console.log('DEBUG: Error in end incrementalImportUpsert', err)
+        console.log(err)
       }
     }
   }
-
-  console.log('DEBUG: Finish incrementalImportUpsert')
 
   await sql.query(pgClient, 'COMMIT')
 }
