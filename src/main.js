@@ -169,6 +169,8 @@ module.exports = async function main(options) {
   oplog.on('data', async function (op) {
     oplog.pause()
 
+    console.log(op)
+
     try {
       await handleOp(op)
     } catch (innerErr) {
