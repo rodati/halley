@@ -120,8 +120,6 @@ module.exports = async function main(options) {
       return
     }
 
-    logOperation(op)
-
     switch (op.op) {
       case 'i':
         if (spec.source.collectionName === 'system.indexes') {
@@ -176,6 +174,8 @@ module.exports = async function main(options) {
       default:
         console.warn('Skipping unknown op', op)
     }
+
+    logOperation(op)
   }
 
   console.log('Tailing oplog...')
