@@ -75,12 +75,12 @@ module.exports = async function main(options) {
     if (op && op.o && op.ts && op.ts.high_) {
       const now = new Date(new Date().getTime())
       const opTime = new Date(op.ts && op.ts.high_ * 1000)
-      console.log('Now ', now)
+      console.log('Now', now)
 
       if (op.o2) {
-        console.log('Processing operation', op.op, 'type', op.o, 'with date', opTime, 'for _id', op.o2)
+        console.log('Processing operation', op.op, op.o, 'with date', opTime, 'for _id', op.o2)
       } else {
-        console.log('Processing operation', op.op, 'type', op.o, 'with date', opTime)
+        console.log('Processing operation', op.op, op.o, 'with date', opTime)
       }
 
       console.log('Difference', Math.abs(now - opTime) / 1000, 'seconds')
