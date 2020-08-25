@@ -45,11 +45,11 @@ async function upsert(spec, pgClient, doc) {
         text: `INSERT INTO "${table}" (${columnNames.join(',')}) 
                VALUES (${placeholders.join(',')})`,
 
-        values,
+        values
       })
     } catch (error) {
       await sql.query(pgClient, 'ROLLBACK')
-      console.log('DEBUG: Error on upsertSingle', error)
+
       // If the insert fails for unique_violation, try the update
       // https://www.postgresql.org/docs/9.2/errcodes-appendix.html
       if (error.name === 'PgError' && error.innerError && error.innerError.code === '23505') {
@@ -60,7 +60,7 @@ async function upsert(spec, pgClient, doc) {
                    SET ${updates.join(',')} 
                    WHERE ${whereClauses.join(' AND ')}`,
 
-            values,
+            values
           })
 
           if (resultUpdate.rowCount > 1) {
@@ -85,14 +85,13 @@ async function upsert(spec, pgClient, doc) {
                SET ${updates.join(',')} 
                WHERE ${whereClauses.join(' AND ')}`,
 
-        values,
+        values
       })
 
       if (result.rowCount > 1) {
         console.warn(`Huh? Updated ${result.rowCount} > 1 rows: upsert(${table}, ${JSON.stringify(doc)}`)
       }
     } catch (error) {
-      console.log('DEBUG: Error updating doc', error)
       await sql.query(pgClient, 'ROLLBACK')
       throw error
     }
@@ -117,5 +116,5 @@ function getUpsertForConcurrency(concurrency) {
 
 module.exports = {
   getUpsertForConcurrency,
-  upsert,
+  upsert
 }
