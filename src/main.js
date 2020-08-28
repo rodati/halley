@@ -105,6 +105,8 @@ module.exports = async function main(options) {
       return
     }
 
+    const opEnteredAt = new Date(new Date().getTime())
+
     switch (op.op) {
       case 'i':
         if (spec.source.collectionName === 'system.indexes') {
@@ -160,7 +162,7 @@ module.exports = async function main(options) {
         console.warn('Skipping unknown op', op)
     }
 
-    logOperation(op)
+    logOperation(op, opEnteredAt)
   }
 
   console.log('Tailing oplog...')
