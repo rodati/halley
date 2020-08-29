@@ -74,6 +74,12 @@ const argv = require('yargs')
     default: true
   })
 
+  .option('listen-from', {
+    describe: 'From where listen from changes in MongoDB',
+    choices: ['oplog', 'change-stream'],
+    default: 'oplog'
+  })
+
   .help('h')
   .alias('help', 'h').argv
 
