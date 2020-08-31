@@ -64,12 +64,12 @@ module.exports = async function main(options) {
   await importCollections(mongoClient, pgPool, values(specs), options)
 
   // listen for changes
+  const ns = Object.keys(specs)
   let stream
   let handler
   let eventType
 
   if (options.listenFrom === 'change-stream') {
-    const ns = Object.keys(specs)
     const changeStream = new ChangeStreamUtil()
     stream = changeStream.getChangeStream(mongoClient, ns)
 
@@ -82,7 +82,7 @@ module.exports = async function main(options) {
     })
     eventType = 'change'
 
-    console.log('Listen change stream...')
+    console.log(`Listen change stream for ${ns}...`)
   } else {
     stream = oplogUtil.observableTail({
       fromTimestamp: tailFrom
@@ -98,7 +98,7 @@ module.exports = async function main(options) {
     })
     eventType = 'data'
 
-    console.log('Tailing oplog...')
+    console.log(`Tailing oplog for ${ns}...`)
   }
 
   stream.on(eventType, async function (event) {
