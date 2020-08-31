@@ -7,6 +7,7 @@ const values = require('lodash/values')
 
 const Specs = require('./utils/Specs')
 const OplogUtil = require('./utils/Oplog')
+const logOperation = require('./utils/logOperation')
 const importCollections = require('./actions/importCollections')
 const replicateOplogDeletions = require('./actions/replicateOplogDeletions')
 
@@ -61,10 +62,6 @@ module.exports = async function main(options) {
   // import
   await importCollections(mongoClient, pgPool, values(specs), options)
 
-  const oplog = oplogUtil.observableTail({
-    fromTimestamp: tailFrom
-  })
-
   async function syncObject(spec, selector) {
     const obj = await spec.source.getCollection(mongoClient).findOne(selector, { projection: spec.source.projection })
 
@@ -107,6 +104,8 @@ module.exports = async function main(options) {
       debug('Skipping op for unknown ns', ns)
       return
     }
+
+    const opEnteredAt = new Date(new Date().getTime())
 
     switch (op.op) {
       case 'i':
@@ -162,10 +161,22 @@ module.exports = async function main(options) {
       default:
         console.warn('Skipping unknown op', op)
     }
+
+    logOperation(op, opEnteredAt)
   }
 
-  function handleOpWrapper(op) {
-    return handleOp(op).catch((innerErr) => {
+  console.log('Tailing oplog...')
+
+  const oplog = oplogUtil.observableTail({
+    fromTimestamp: tailFrom
+  })
+
+  oplog.on('data', async function (op) {
+    oplog.pause()
+
+    try {
+      await handleOp(op)
+    } catch (innerErr) {
       const error = new Error(`Could not process op: ${JSON.stringify(op)}`)
       error.innerError = innerErr
       if (options.exitOnError) {
@@ -173,12 +184,21 @@ module.exports = async function main(options) {
       } else {
         console.log(error)
       }
-    })
-  }
+    } finally {
+      oplog.resume()
+    }
+  })
 
-  console.log('Tailing oplog...')
-  oplog.subscribe(handleOpWrapper, function onError(err) {
-    throw err
+  oplog.on('error', function (error) {
+    if (options.exitOnError) {
+      throw error
+    } else {
+      console.log(error)
+    }
+  })
+
+  oplog.on('close', function () {
+    throw new Error(`Oplog stream closed!`)
   })
 }
 

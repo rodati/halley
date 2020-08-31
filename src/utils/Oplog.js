@@ -1,6 +1,5 @@
 'use strict'
 
-const { streamToRx } = require('rxjs-stream')
 const { Timestamp } = require('mongodb')
 
 module.exports = class OplogUtil {
@@ -9,11 +8,7 @@ module.exports = class OplogUtil {
   }
 
   async getLastTimestamp() {
-    const lastLogArray = await this._oplog
-      .find({}, { ts: 1 })
-      .sort({ $natural: -1 })
-      .limit(1)
-      .toArray()
+    const lastLogArray = await this._oplog.find({}, { ts: 1 }).sort({ $natural: -1 }).limit(1).toArray()
 
     if (!lastLogArray.length) {
       return null
@@ -36,7 +31,7 @@ module.exports = class OplogUtil {
       }
     )
 
-    return streamToRx(cursor.stream())
+    return cursor.stream()
   }
 
   async getNewOps(lastSyncTimestamp) {
