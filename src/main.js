@@ -130,6 +130,10 @@ module.exports = async function main(options) {
   stream.on('close', function () {
     throw new Error(`Stream closed!`)
   })
+
+  stream.on('end', () => {
+    console.log('Error: no more data to be consumed from the stream!')
+  })
 }
 
 function getLocalTimestamp() {
