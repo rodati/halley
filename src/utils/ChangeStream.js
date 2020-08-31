@@ -10,20 +10,25 @@ module.exports = class ChangeStreamUtil {
     const db = uniq(ns.map((name) => name && name[0]))
     const collections = uniq(ns.map((name) => name && name[1]))
 
-    return mongoClient.db().watch(
-      [
-        {
-          $match: {
-            'ns.db': {
-              $in: db
-            },
-            'ns.coll': {
-              $in: collections
+    // If there is configured only one collection, listen the change in that collection, else, listen the whole DB, filtering by collection
+    if (ns.length === 1) {
+      return mongoClient.db().collection(collections[0]).watch({ fullDocument: 'updateLookup' })
+    } else {
+      return mongoClient.db().watch(
+        [
+          {
+            $match: {
+              'ns.db': {
+                $in: db
+              },
+              'ns.coll': {
+                $in: collections
+              }
             }
           }
-        }
-      ],
-      { fullDocument: 'updateLookup' }
-    )
+        ],
+        { fullDocument: 'updateLookup' }
+      )
+    }
   }
 }
