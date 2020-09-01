@@ -38,6 +38,7 @@ module.exports = class OperationFromChangeStreamHandler {
             break
 
           case 'normal':
+          case 'ignore-past':
             await this.del(spec, this.pgPool, changeEvent.documentKey)
             break
 

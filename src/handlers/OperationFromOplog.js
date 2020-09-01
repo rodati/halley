@@ -102,6 +102,7 @@ module.exports = class OperationFromOplogHandler {
             break
 
           case 'normal':
+          case 'ignore-past':
             await this.del(spec, this.pgPool, op.o)
             break
 

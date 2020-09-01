@@ -53,11 +53,11 @@ module.exports = async function main(options) {
     rootDatabase
   })
 
-  if (options.incrementalImport && options.deleteMode !== 'ignore') {
+  if (options.incrementalImport && options.deleteMode === 'normal') {
     // replicate deletions in oplog
     await replicateOplogDeletions(specs, pgPool, localDb, options.concurrency)
   } else {
-    console.log(`Ignoring deletion from oplog`)
+    console.log(`Ignoring past deletions from oplog`)
   }
 
   // import

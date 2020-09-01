@@ -39,8 +39,8 @@ const argv = require('yargs')
 
   .option('delete-mode', {
     describe: 'How to handle deletes',
-    choices: ['ignore', 'normal'],
-    default: 'normal'
+    choices: ['ignore', 'normal', 'ignore-past'],
+    default: 'ignore-past'
   })
 
   .option('db-mode', {
