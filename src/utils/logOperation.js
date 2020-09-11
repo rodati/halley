@@ -7,9 +7,13 @@ function logOperation(op, operationEnteredAt) {
   let operationUpdatedAt
   let opId
 
-  if (op && op.o && op.op) {
-    opId = _get(op, 'o._id') || _get(op, 'o2._id')
-    operationUpdatedAt = _get(op, 'o.updatedAt') || _get(op, 'o.$set.updatedAt')
+  if (op) {
+    opId = _get(op, 'o._id') || _get(op, 'o2._id') || _get(op, 'documentKey._id')
+    operationUpdatedAt =
+      _get(op, 'o.updatedAt') ||
+      _get(op, 'o.$set.updatedAt') ||
+      _get(op, 'updateDescription.updatedFields.updatedAt') ||
+      _get(op, 'fullDocument.updatedAt')
 
     if (opId && operationUpdatedAt && operationEnteredAt) {
       console.log('Operation processed for _id', opId)
@@ -22,7 +26,11 @@ function logOperation(op, operationEnteredAt) {
       console.log('Operation process delay', Math.abs(operationUpsertedAt - operationEnteredAt) / 1000, 'seconds')
       console.log('--------')
     } else {
-      console.log('Operation processed', op.op, op.o)
+      if (op.op && op.o) {
+        console.log('Operation processed', op.op, op.o)
+      } else {
+        console.log('Operation processed', op)
+      }
       console.log('--------')
     }
   }

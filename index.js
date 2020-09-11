@@ -39,8 +39,8 @@ const argv = require('yargs')
 
   .option('delete-mode', {
     describe: 'How to handle deletes',
-    choices: ['ignore', 'normal'],
-    default: 'normal'
+    choices: ['ignore', 'normal', 'ignore-past'],
+    default: 'ignore-past'
   })
 
   .option('db-mode', {
@@ -72,6 +72,12 @@ const argv = require('yargs')
       'Making a full import: if should drop and create the postgres table where will be imported the documents and runs the table_init commands after the importation was done',
     boolean: true,
     default: true
+  })
+
+  .option('listen-from', {
+    describe: 'From where listen from changes in MongoDB',
+    choices: ['oplog', 'change-stream'],
+    default: 'oplog'
   })
 
   .help('h')
