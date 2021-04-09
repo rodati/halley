@@ -61,7 +61,7 @@ module.exports = async function main(options) {
   const ns = Object.keys(specs)
 
   const changeStream = new ChangeStreamUtil()
-  const stream = changeStream.getChangeStream(mongoClient, ns)
+  const streams = changeStream.getChangeStreams(mongoClient, ns)
   const handler = new OperationFromChangeStreamHandler({
     options,
     specs,
@@ -70,41 +70,43 @@ module.exports = async function main(options) {
     del
   })
 
-  console.log(`Listen change stream for ${ns}...`)
+  console.log(`Listening change stream for ${ns}...`)
 
-  stream.on('change', async function (event) {
-    stream.pause()
+  for (const stream of streams) {
+    stream.on('change', async function (event) {
+      stream.pause()
 
-    try {
-      await handler.handle.call(handler, event)
-    } catch (innerErr) {
-      const error = new Error(`Could not process event: ${JSON.stringify(event)}`)
-      error.innerError = innerErr
+      try {
+        await handler.handle.call(handler, event)
+      } catch (innerErr) {
+        const error = new Error(`Could not process event: ${JSON.stringify(event)}`)
+        error.innerError = innerErr
+        if (options.exitOnError) {
+          throw error
+        } else {
+          console.log(error)
+        }
+      } finally {
+        stream.resume()
+      }
+    })
+
+    stream.on('error', function (error) {
       if (options.exitOnError) {
         throw error
       } else {
         console.log(error)
       }
-    } finally {
-      stream.resume()
-    }
-  })
+    })
 
-  stream.on('error', function (error) {
-    if (options.exitOnError) {
-      throw error
-    } else {
-      console.log(error)
-    }
-  })
+    stream.on('close', function () {
+      throw new Error(`Stream closed!`)
+    })
 
-  stream.on('close', function () {
-    throw new Error(`Stream closed!`)
-  })
-
-  stream.on('end', () => {
-    console.log('Error: no more data to be consumed from the stream!')
-  })
+    stream.on('end', () => {
+      console.log('Error: no more data to be consumed from the stream!')
+    })
+  }
 }
 
 process.on('unhandledRejection', (err) => {
