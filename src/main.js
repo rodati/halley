@@ -58,10 +58,8 @@ module.exports = async function main(options) {
   await importCollections(mongoClient, pgPool, values(specs), options)
 
   // listen for changes
-  const ns = Object.keys(specs)
-
   const changeStream = new ChangeStreamUtil()
-  const streams = changeStream.getChangeStreams(mongoClient, ns)
+  const streams = changeStream.getChangeStreams(mongoClient, specs)
   const handler = new OperationFromChangeStreamHandler({
     options,
     specs,
@@ -70,7 +68,7 @@ module.exports = async function main(options) {
     del
   })
 
-  console.log(`Listening change stream for ${ns}...`)
+  console.log(`Listening change stream for ${Object.keys(specs)}...`)
 
   for (const stream of streams) {
     stream.on('change', async function (event) {
