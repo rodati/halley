@@ -70,12 +70,14 @@ module.exports = async function main(options) {
 
   console.log(`Listening change stream for ${Object.keys(specs)}...`)
 
-  for (const stream of streams) {
+  for (const streamItem of streams) {
+    const stream = streamItem.stream
+
     stream.on('change', async function (event) {
       stream.pause()
 
       try {
-        await handler.handle.call(handler, event)
+        await handler.handle.call(handler, event, streamItem.name)
       } catch (innerErr) {
         const error = new Error(`Could not process event: ${JSON.stringify(event)}`)
         error.innerError = innerErr

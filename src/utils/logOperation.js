@@ -2,7 +2,7 @@
 
 const _get = require('lodash/get')
 
-function logOperation(op, operationEnteredAt) {
+function logOperation(op, operationEnteredAt, streamName) {
   const operationUpsertedAt = new Date(new Date().getTime())
   let operationUpdatedAt
   let opId
@@ -18,10 +18,10 @@ function logOperation(op, operationEnteredAt) {
       _get(op, 'fullDocument.updatedAt')
 
     if (opId && operationUpdatedAt && operationEnteredAt && opType) {
-      console.log(`Operation processed for _id ${opId}`)
+      console.log(`Operation ${opType} processed for _id ${opId}`)
       console.log(`Operation updated at ${operationUpdatedAt}`)
       console.log(
-        `Operation (${opType}) total delay (Difference) ${
+        `Operation (${streamName}) total delay (Difference) ${
           Math.abs(operationUpsertedAt - operationUpdatedAt) / 1000
         } seconds`
       )
