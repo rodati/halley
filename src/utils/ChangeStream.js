@@ -33,21 +33,30 @@ module.exports = class ChangeStreamUtil {
     if (specsNs.length === 1) {
       const specsNsParts = specsNs[0].split('.')
       const collection = specsNsParts[1]
-      const pipes = specs[specsNs[0]].stream && specs[specsNs[0]].stream.pipes
-      // If there are pipes, create an stream for each pipe. Else, create a stream for only the collection
-      if (pipes && pipes.length) {
-        for (const pipe of pipes) {
-          console.log(`Creating stream for collection ${collection} and pipe ${pipe}`)
+      const specsStreams = specs[specsNs[0]].streams
 
-          const pipeParsed = JSON.parse(pipe)
+      // If there are pipes, create an stream for each pipe. Else, create a stream for only the collection
+      if (specsStreams && specsStreams.length) {
+        for (const specsStream of specsStreams) {
+          console.log(`Creating stream '${specsStream.name}' for collection ${collection} and pipe ${specsStream.pipe}`)
+
+          const pipeParsed = JSON.parse(specsStream.pipe)
           const stream = this.getChangeStreamForCollection(mongoClient, collection, pipeParsed)
-          streams.push(stream)
+
+          streams.push({
+            name: `${collection}.${specsStream.name}`,
+            stream
+          })
         }
       } else {
         console.log(`Creating stream for collection ${collection}`)
 
         const stream = this.getChangeStreamForCollection(mongoClient, collection)
-        streams.push(stream)
+
+        streams.push({
+          name: collection,
+          stream
+        })
       }
     } else {
       const specsNsParts = specsNs.map((name) => {
@@ -59,7 +68,11 @@ module.exports = class ChangeStreamUtil {
       console.log(`Creating stream for collections ${collections}`)
 
       const stream = this.getChangeStreamForCollections(mongoClient, db, collections)
-      streams.push(stream)
+
+      streams.push({
+        name: `${collections.join(',')}`,
+        stream
+      })
     }
 
     return streams
