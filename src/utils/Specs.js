@@ -90,8 +90,7 @@ function getCollectionSpec(tableSpec, collectionName, databaseName) {
         return memo
       }, {})
 
-  const streamPipes =
-    Array.isArray(meta[':stream_pipes']) && meta[':stream_pipes'].length > 0 ? meta[':stream_pipes'] : []
+  const streams = Array.isArray(meta[':streams']) && meta[':streams'].length > 0 ? meta[':streams'] : []
 
   return {
     ns: `${databaseName}.${collectionName}`,
@@ -116,9 +115,7 @@ function getCollectionSpec(tableSpec, collectionName, databaseName) {
       incrementalReplicationLimit: meta[':incremental_replication_limit'],
       deleteKey
     },
-    stream: {
-      pipes: streamPipes
-    }
+    streams
   }
 }
 
