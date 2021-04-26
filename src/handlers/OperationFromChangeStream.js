@@ -12,7 +12,7 @@ module.exports = class OperationFromChangeStreamHandler {
     this.del = del
   }
 
-  async handle(changeEvent) {
+  async handle(changeEvent, streamName) {
     const { ns, operationType } = changeEvent
 
     const spec = this.specs[`${ns.db}.${ns.coll}`]
@@ -52,6 +52,6 @@ module.exports = class OperationFromChangeStreamHandler {
         console.warn('Skipping event type', operationType)
     }
 
-    logOperation(changeEvent, eventEnteredAt)
+    logOperation(changeEvent, eventEnteredAt, streamName)
   }
 }

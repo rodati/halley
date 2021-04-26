@@ -1,13 +1,11 @@
 'use strict'
 
-const { MongoClient, Timestamp } = require('mongodb')
+const { MongoClient } = require('mongodb')
 const pg = require('pg')
 const values = require('lodash/values')
 
 const Specs = require('./utils/Specs')
-const OplogUtil = require('./utils/Oplog')
 const ChangeStreamUtil = require('./utils/ChangeStream')
-const OperationFromOplogHandler = require('./handlers/OperationFromOplog')
 const OperationFromChangeStreamHandler = require('./handlers/OperationFromChangeStream')
 const importCollections = require('./actions/importCollections')
 const replicateOplogDeletions = require('./actions/replicateOplogDeletions')
@@ -40,10 +38,6 @@ module.exports = async function main(options) {
   })
 
   const localDb = mongoClient.db('local')
-  const oplogUtil = new OplogUtil(localDb)
-
-  // find the last timestamp. If there isn't one found, get one from the local clock
-  const tailFrom = (await oplogUtil.getLastTimestamp()) || getLocalTimestamp()
 
   console.log('Connections established successfully...')
 
@@ -64,80 +58,55 @@ module.exports = async function main(options) {
   await importCollections(mongoClient, pgPool, values(specs), options)
 
   // listen for changes
-  const ns = Object.keys(specs)
-  let stream
-  let handler
-  let eventType
+  const changeStream = new ChangeStreamUtil()
+  const streams = changeStream.getChangeStreams(mongoClient, specs)
+  const handler = new OperationFromChangeStreamHandler({
+    options,
+    specs,
+    upsert,
+    pgPool,
+    del
+  })
 
-  if (options.listenFrom === 'change-stream') {
-    const changeStream = new ChangeStreamUtil()
-    stream = changeStream.getChangeStream(mongoClient, ns)
+  console.log(`Listening change stream for ${Object.keys(specs)}...`)
 
-    handler = new OperationFromChangeStreamHandler({
-      options,
-      specs,
-      upsert,
-      pgPool,
-      del
+  for (const streamItem of streams) {
+    const stream = streamItem.stream
+
+    stream.on('change', async function (event) {
+      stream.pause()
+
+      try {
+        await handler.handle.call(handler, event, streamItem.name)
+      } catch (innerErr) {
+        const error = new Error(`Could not process event: ${JSON.stringify(event)}`)
+        error.innerError = innerErr
+        if (options.exitOnError) {
+          throw error
+        } else {
+          console.log(error)
+        }
+      } finally {
+        stream.resume()
+      }
     })
-    eventType = 'change'
 
-    console.log(`Listen change stream for ${ns}...`)
-  } else {
-    stream = oplogUtil.observableTail({
-      fromTimestamp: tailFrom
-    })
-
-    handler = new OperationFromOplogHandler({
-      options,
-      specs,
-      upsert,
-      pgPool,
-      del,
-      mongoClient
-    })
-    eventType = 'data'
-
-    console.log(`Tailing oplog for ${ns}...`)
-  }
-
-  stream.on(eventType, async function (event) {
-    stream.pause()
-
-    try {
-      await handler.handle.call(handler, event)
-    } catch (innerErr) {
-      const error = new Error(`Could not process event: ${JSON.stringify(event)}`)
-      error.innerError = innerErr
+    stream.on('error', function (error) {
       if (options.exitOnError) {
         throw error
       } else {
         console.log(error)
       }
-    } finally {
-      stream.resume()
-    }
-  })
+    })
 
-  stream.on('error', function (error) {
-    if (options.exitOnError) {
-      throw error
-    } else {
-      console.log(error)
-    }
-  })
+    stream.on('close', function () {
+      throw new Error(`Stream closed!`)
+    })
 
-  stream.on('close', function () {
-    throw new Error(`Stream closed!`)
-  })
-
-  stream.on('end', () => {
-    console.log('Error: no more data to be consumed from the stream!')
-  })
-}
-
-function getLocalTimestamp() {
-  return new Timestamp(0, Math.floor(new Date().getTime() / 1000))
+    stream.on('end', () => {
+      console.log('Error: no more data to be consumed from the stream!')
+    })
+  }
 }
 
 process.on('unhandledRejection', (err) => {

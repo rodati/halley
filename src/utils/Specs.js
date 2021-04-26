@@ -90,6 +90,8 @@ function getCollectionSpec(tableSpec, collectionName, databaseName) {
         return memo
       }, {})
 
+  const streams = Array.isArray(meta[':streams']) && meta[':streams'].length > 0 ? meta[':streams'] : []
+
   return {
     ns: `${databaseName}.${collectionName}`,
     source: new CollectionSpecSource({
@@ -112,7 +114,8 @@ function getCollectionSpec(tableSpec, collectionName, databaseName) {
       incrementalReplicationDirection: meta[':incremental_replication_direction'] === 'high_to_low' ? -1 : 1,
       incrementalReplicationLimit: meta[':incremental_replication_limit'],
       deleteKey
-    }
+    },
+    streams
   }
 }
 
