@@ -17,6 +17,11 @@ const argv = require('yargs')
     default: 'postgres://postgres:postgres@localhost:5432/db'
   })
 
+  .option('sql-schema', {
+    describe: 'SQL schema to use',
+    nargs: 1
+  })
+
   .option('mongo', {
     describe: 'Mongo connection string',
     nargs: 1,

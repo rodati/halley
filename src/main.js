@@ -37,6 +37,12 @@ module.exports = async function main(options) {
     max: Math.max(1, options.concurrency)
   })
 
+  if (options.sqlSchema) {
+    pgPool.on('connect', (client) => {
+      client.query(`SET search_path TO ${options.sqlSchema}`)
+    })
+  }
+
   const localDb = mongoClient.db('local')
 
   console.log('Connections established successfully...')
